@@ -4,9 +4,7 @@ enum logic [1:0] {Fetch_PC, Fetch_E1, Fetch_E2} state,nextState;
 assign State_out = state;
 
 always_ff@(posedge clock, posedge reset)
-	if(reset)
-		state <= Fetch_PC;
-	
+	if(reset) state <= Fetch_PC;
 	else state <= nextState;
 	
 always_comb
