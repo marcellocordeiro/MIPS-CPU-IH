@@ -1,0 +1,8 @@
+|main
+a => state.DATAIN
+clock => state.CLK
+reset_l => state.ACLR
+out <= state.DB_MAX_OUTPUT_PORT_TYPE
+stateout <= state.DB_MAX_OUTPUT_PORT_TYPE
+
+
