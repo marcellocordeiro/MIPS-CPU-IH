@@ -1,25 +1,19 @@
-module main (input logic a, clock, reset_l, output logic out, stateout);
+module main (input logic clock, reset, PCin, output logic out, stateout);
 
-enum logic {B = 1'b0, C = 1'b1} state, nextState;
+logic 
+
+enum logic {} state, nextState;
 assign stateout = state;
 
-always_ff@ (posedge clock, posedge reset_l)
-	if(reset_l) begin
-		state <= B;
-	end else
-		state <= nextState;
+always_ff@(posedge clock, posedge reset)
+	if (reset) state <= 0;
+	else state <= NextState;
+	
+	
+	
+	
+Registrador PC (clock, reset, PCWrite, PCin, PCout);
+Mux_0 Mux_0 (PCout, ALUOut, IorD);
 
-always_comb
-	case(state)
-		B: begin
-			out = 0;
-			nextState = (a) ? B:C;
-		end
-
-		C: begin
-			out = 1;
-			nextState = (a) ? B:C;
-		end
-	endcase
 
 endmodule: main
