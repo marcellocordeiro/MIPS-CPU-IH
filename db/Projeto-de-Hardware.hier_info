@@ -242,7 +242,7 @@ Saida[30] <= Saida[30]~reg0.DB_MAX_OUTPUT_PORT_TYPE
 Saida[31] <= Saida[31]~reg0.DB_MAX_OUTPUT_PORT_TYPE
 
 
-|main|Mux_0:PCMux
+|main|Mux32_2:PCMux
 in0[0] => out.DATAA
 in0[1] => out.DATAA
 in0[2] => out.DATAA

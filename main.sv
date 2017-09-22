@@ -16,7 +16,7 @@ logic [31:0] PCMuxOut;
 Unidade_de_Controle  (clock, reset, PCWrite, IorD, WR, State_out);	
 
 Registrador PC (clock, reset, PCWrite, PCin, PCout);
-Mux_0 PCMux (PCout, ALUOut, IorD, PCMuxOut);
+Mux32_2 PCMux (PCout, ALUOut, IorD, PCMuxOut);
 Memoria Memoria (PCMuxOut, clock, WR, Datain, Dataout);
 
 
