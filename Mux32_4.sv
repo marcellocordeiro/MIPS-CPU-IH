@@ -1,4 +1,4 @@
-module Mux32_4 (input logic [31:0] in0, in1, in2, in3 input logic ALUSrcB, output logic [31:0] out);
+module Mux32_4 (input logic [31:0] in0, in1, in2, in3, input logic ALUSrcB, output logic [31:0] out);
 
 
 always_comb
