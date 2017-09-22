@@ -2,7 +2,7 @@ module Mux32_4 (input logic [31:0] in0, in1, in2, in3, input logic [1:0]sel, out
 
 
 always_comb
-	case(sel)
+	case (sel)
 		0:
 			out = in0;
 		1:

@@ -1,43 +1,110 @@
-module Unidade_de_Controle(input logic clock, reset, output logic PCW ,IORD, WR, ALUSrcA, output logic [2:0] ALUOpOut, output logic [1:0] ALUSrcB, State_out);
+module Unidade_de_Controle (input logic clock, reset,
+                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst,
+                            output logic [1:0] PCSource, AluSrcB, State_out,
+                            output logic [2:0] ALUOpOut);
+
 enum logic [1:0] {Fetch_PC, Fetch_E1, Fetch_E2} state, nextState;
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
 assign State_out = state;
 assign ALUOpOut = ALUOp;
 
-always_ff@(posedge clock, posedge reset)
-	if(reset) state <= Fetch_PC;
-	else state <= nextState;
-	
-always_comb
+always_ff@ (posedge clock, posedge reset)
+    if (reset)
+        state <= Fetch_PC;
+    else
+        state <= nextState;
 
-	case(state)
-		Fetch_PC: begin
-			PCW = 1;
-			nextState = Fetch_E1;
-			IORD = 0;
-			WR = 0;
-			ALUSrcA = 0;
-			ALUSrcB = 1;
-			ALUOp = ADD;
-			end
-		Fetch_E1: begin
-			PCW = 0;
-			nextState = Fetch_E2;
-			IORD = 0;
-			WR = 0;
-			ALUSrcA = 0;
-			ALUSrcB = 1;
-			ALUOp = ADD;
-		end
-		Fetch_E2: begin
-			PCW = 0;
-			nextState = Fetch_PC;
-			IORD = 0;
-			WR = 0;
-			ALUSrcA = 0;
-			ALUSrcB = 1;
-			ALUOp = ADD;
-		end
-	endcase
-	endmodule: Unidade_de_Controle
+always_comb
+    case (state)
+        Fetch_PC: begin
+            PCWriteCond = 1'bx;
+            PCWrite = 1'b1;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 1'bx;
+            IRWrite = 1'bx;
+            AluSrcA = 1'bx;
+            RegWrite = 1'bx;
+            RegDst = 1'bx;
+
+            PCSource = 2'bxx;
+            AluSrcB = 2'bxx;
+
+            ALUOp = LOAD;
+
+            nextState = Fetch_E1;
+        end
+
+        Fetch_E1: begin // espera 1
+            PCWriteCond = 1'bx;
+            PCWrite = 1'bx;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 1'bx;
+            IRWrite = 1'bx;
+            AluSrcA = 1'bx;
+            RegWrite = 1'bx;
+            RegDst = 1'bx;
+
+            PCSource = 2'bxx;
+            AluSrcB = 2'bxx;
+
+            ALUOp = ADD;
+            
+            nextState = Fetch_E2;
+        end
+
+        Fetch_E2: begin // espera 2
+            PCWriteCond = 1'bx;
+            PCWrite = 1'bx;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 1'bx;
+            IRWrite = 1'bx;
+            AluSrcA = 1'bx;
+            RegWrite = 1'bx;
+            RegDst = 1'bx;
+
+            PCSource = 2'bxx;
+            AluSrcB = 1; // seleciona a constante 4 no mux
+
+            ALUOp = LOAD;
+
+            nextState = Fetch_PC;
+        end
+    endcase
+
+endmodule: Unidade_de_Controle
+
+/*
+always_comb
+    case (state)
+        Fetch_PC: begin
+            PCWrite = 1;
+            nextState = Fetch_E1;
+            IorD = 0;
+            MemReadWrite = 0;
+            ALUSrcA = 0;
+            ALUSrcB = 1;
+            ALUOp = ADD;
+            end
+        Fetch_E1: begin
+            PCWrite = 0;
+            nextState = Fetch_E2;
+            IorD = 0;
+            MemReadWrite = 0;
+            ALUSrcA = 0;
+            ALUSrcB = 1;
+            ALUOp = ADD;
+        end
+        Fetch_E2: begin
+            PCWrite = 0;
+            nextState = Fetch_PC;
+            IorD = 0;
+            MemReadWrite = 0;
+            ALUSrcA = 0;
+            ALUSrcB = 1;
+            ALUOp = ADD;
+        end
+*/
