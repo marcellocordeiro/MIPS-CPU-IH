@@ -125,42 +125,6 @@ a36c8ec425c8a2589af98b2d4daabc3
 
 # end
 # entity
-Mux32_2
-# storage
-db|Projeto-de-Hardware.(3).cnf
-db|Projeto-de-Hardware.(3).cnf
-# logic_option {
-AUTO_RAM_RECOGNITION
-ON
-}
-# case_sensitive
-# source_file
-mux32_2.sv
-b9ddd3e28f8bcea0f158e6b61b544b5
-9
-# internal_option {
-HDL_INITIAL_FANOUT_LIMIT
-OFF
-AUTO_RESOURCE_SHARING
-OFF
-AUTO_RAM_RECOGNITION
-ON
-AUTO_ROM_RECOGNITION
-ON
-IGNORE_VERILOG_INITIAL_CONSTRUCTS
-OFF
-VERILOG_CONSTANT_LOOP_LIMIT
-5000
-VERILOG_NON_CONSTANT_LOOP_LIMIT
-250
-}
-# hierarchies {
-Mux32_2:PCMux
-}
-# macro_sequence
-
-# end
-# entity
 Memoria
 # storage
 db|Projeto-de-Hardware.(4).cnf
@@ -927,6 +891,42 @@ Memoria:Memoria|lpm_ram_dq:MEM|altram:sram|altsyncram:ram_block|altsyncram_e1a1:
 Memoria:Memoria|lpm_ram_dq:MEM_plus_One|altram:sram|altsyncram:ram_block|altsyncram_e1a1:auto_generated
 Memoria:Memoria|lpm_ram_dq:MEM_plus_Two|altram:sram|altsyncram:ram_block|altsyncram_e1a1:auto_generated
 Memoria:Memoria|lpm_ram_dq:MEM_plus_Three|altram:sram|altsyncram:ram_block|altsyncram_e1a1:auto_generated
+}
+# macro_sequence
+
+# end
+# entity
+Mux32_2
+# storage
+db|Projeto-de-Hardware.(3).cnf
+db|Projeto-de-Hardware.(3).cnf
+# logic_option {
+AUTO_RAM_RECOGNITION
+ON
+}
+# case_sensitive
+# source_file
+mux32_2.sv
+352a4c776350f48899da759298223b80
+9
+# internal_option {
+HDL_INITIAL_FANOUT_LIMIT
+OFF
+AUTO_RESOURCE_SHARING
+OFF
+AUTO_RAM_RECOGNITION
+ON
+AUTO_ROM_RECOGNITION
+ON
+IGNORE_VERILOG_INITIAL_CONSTRUCTS
+OFF
+VERILOG_CONSTANT_LOOP_LIMIT
+5000
+VERILOG_NON_CONSTANT_LOOP_LIMIT
+250
+}
+# hierarchies {
+Mux32_2:PCMux
 }
 # macro_sequence
 
