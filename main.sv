@@ -1,4 +1,5 @@
-module main (input logic clock, reset, output logic [1:0] Estado);
+module main (input logic clock, reset,
+             output logic [1:0] Estado);
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
@@ -43,6 +44,5 @@ Registrador B_reg (clock, reset, BWrite, Bin, Bout); // ligado ao regbank
 
 PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
 Mux32_3 PC_mux (Alu, AluOut, jmp_adr, PCSource, PCin);
-
 
 endmodule: main
