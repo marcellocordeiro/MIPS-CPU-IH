@@ -24,16 +24,16 @@ always_comb
             MemReadWrite = 0;
             MemtoReg = 1'bx;
             IRWrite = 1'bx;
-            AluSrcA = 1'bx;
+            AluSrcA = 1'b0;
             RegWrite = 1'bx;
             RegDst = 1'bx;
             AWrite = 1'bx;
             BWrite = 1'bx;
 
             PCSource = 2'b00;
-            AluSrcB = 2'b00;
+            AluSrcB = 2'b01;
 
-            ALUOp = LOAD;
+            ALUOp = ADD;
 
             nextState = Fetch_E1;
         end

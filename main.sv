@@ -1,5 +1,5 @@
 module main (input logic clock, reset,
-             output logic [1:0] Estado,output logic [31:0] PC, ALU_B);
+             output logic [1:0] Estado,output logic [31:0] PC, PCin, Address);
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 logic [2:0] ALUOpOut;
@@ -15,24 +15,22 @@ logic [4:0] WriteRegister;
 logic [31:0] WriteDataMem;
 
 //Saidas --> Entradas
-
-logic [31:0] PCin, Address, Aout, Bout,Alu,extended_number,shifted_extended_number;
-logic ALU_A;
-//logic [31:0] ALU_B;
+logic [31:0] Aout, Bout, Alu, extended_number, shifted_extended_number;
+logic [31:0] ALU_A, ALU_B;
 
 //Unidade de Controle
-logic PCWrite, wr, IorD, ALUSrcA, IRWrite, AOWR, RegDst, AWrite, BWrite, MemtoReg, RegWrite, PCWriteCond;
-//logic [2:0] ALUSrcB;
+logic PCWrite, wr, IorD, AluSrcA, IRWrite, AOWR, RegDst, AWrite, BWrite, MemtoReg, RegWrite, PCWriteCond;
+logic [2:0] AluSrcB;
 logic [1:0] PCSource;
 
-Unidade_de_Controle UC (clock, reset, PCWriteCond, PCWrite, IorD, wr, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst,AWrite,BWrite,PCSource, AluSrcB, Estado,ALUOpOut);
+Unidade_de_Controle UC (clock, reset, PCWriteCond, PCWrite, IorD, wr, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst, AWrite, BWrite, PCSource, AluSrcB, Estado, ALUOpOut);
 
 Registrador PC_reg (clock, reset, PCWrite, PCin, PC);
 Mux32_2 MemMux (PC, AluOut, IorD, Address);
 
 assign WriteDataMem = Bout;
 Memoria Memoria (Address, clock, wr, WriteDataMem, MemData);
-Mux32_2 ALU_A_Mux (PC, Aout, ALUSrcA, ALU_A);
+Mux32_2 ALU_A_Mux (PC, Aout, AluSrcA, ALU_A);
 Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
 ula32 ALU (ALU_A, ALU_B, ALUOp, Alu);
 Instr_Reg IReg (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
