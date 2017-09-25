@@ -1,5 +1,5 @@
 module main (input logic clock, reset,
-             output logic [1:0] Estado);
+             output logic [1:0] Estado,output logic [31:0] PC);
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
@@ -13,7 +13,8 @@ logic [4:0] WriteRegister;
 logic [31:0] WriteDataMem;
 
 //Saidas --> Entradas
-logic [31:0] PCin, PC, Address, Aout, Bout,Alu;
+
+logic [31:0] PCin, Address, Aout, Bout,Alu,extended_number,shifted_extended_number;
 logic ALU_A;
 logic [1:0] ALU_B;
 
@@ -30,7 +31,7 @@ Mux32_2 MemMux (PC, AluOut, IorD, Address);
 assign WriteDataMem = Bout;
 Memoria Memoria (Address, clock, wr, WriteDataMem, MemData);
 Mux32_2 ALU_A_Mux (PC, Aout, ALUSrcA, ALU_A);
-Mux32_4 ALU_B_Mux (Bout, 4, 0, 0, ALUSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
+Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, ALUSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
 ula32 ALU (ALU_A, ALU_B, ALUOp, Alu);
 Instr_Reg IReg (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
 Registrador MDR_reg (clock, reset, MemData, MDR);
@@ -44,5 +45,8 @@ Registrador B_reg (clock, reset, BWrite, Bin, Bout); // ligado ao regbank
 
 PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
 Mux32_3 PC_mux (Alu, AluOut, jmp_adr, PCSource, PCin);
+
+sign_extend SignExtend(I15_0,extended_number);
+Shift_left2 SL2(extended_number,shifted_extended_number);
 
 endmodule: main
