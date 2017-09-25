@@ -31,7 +31,7 @@ always_comb
             BWrite = 1'bx;
 
             PCSource = 2'b00;
-            AluSrcB = 2'bxx;
+            AluSrcB = 2'b00;
 
             ALUOp = LOAD;
 
@@ -45,16 +45,16 @@ always_comb
             MemReadWrite = 0;
             MemtoReg = 1'bx;
             IRWrite = 1'bx;
-            AluSrcA = 1'bx;
+            AluSrcA = 1'b0;
             RegWrite = 1'bx;
             RegDst = 1'bx;
             AWrite = 1'bx;
             BWrite = 1'bx;
 
-            PCSource = 2'bxx;
-            AluSrcB = 2'bxx;
+            PCSource = 2'b00;
+            AluSrcB = 2'b01;
 
-            ALUOp = LOAD;
+            ALUOp = ADD;
             
             nextState = Fetch_E2;
         end
@@ -62,18 +62,18 @@ always_comb
         Fetch_E2: begin // espera 2
             PCWriteCond = 1'bx;
             PCWrite = 0;
-            IorD = 1'b0;
-            MemReadWrite = 1'b0;
+            IorD = 0;
+            MemReadWrite = 0;
             MemtoReg = 1'bx;
             IRWrite = 1'bx;
-            AluSrcA = 0;
+            AluSrcA = 1'b0;
             RegWrite = 1'bx;
             RegDst = 1'bx;
             AWrite = 1'bx;
             BWrite = 1'bx;
 
-            PCSource = 2'bxx;
-            AluSrcB = 1; // seleciona a constante 4 no mux
+            PCSource = 2'b00;
+            AluSrcB = 2'b01;
 
             ALUOp = ADD;
 

@@ -1356,7 +1356,14 @@ TRANSITION_LIST("ALU_B[2]")
 	NODE
 	{
 		REPEAT = 1;
-		LEVEL 1 FOR 1000.0;
+		LEVEL 0 FOR 3.0;
+		NODE
+		{
+			REPEAT = 6;
+			LEVEL 1 FOR 4.0;
+			LEVEL 0 FOR 2.0;
+		}
+		LEVEL 1 FOR 961.0;
 	}
 }
 

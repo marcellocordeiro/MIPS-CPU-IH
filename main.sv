@@ -22,7 +22,7 @@ logic ALU_A;
 
 //Unidade de Controle
 logic PCWrite, wr, IorD, ALUSrcA, IRWrite, AOWR, RegDst, AWrite, BWrite, MemtoReg, RegWrite, PCWriteCond;
-logic [2:0] ALUSrcB;
+//logic [2:0] ALUSrcB;
 logic [1:0] PCSource;
 
 Unidade_de_Controle UC (clock, reset, PCWriteCond, PCWrite, IorD, wr, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst,AWrite,BWrite,PCSource, AluSrcB, Estado,ALUOpOut);
@@ -33,7 +33,7 @@ Mux32_2 MemMux (PC, AluOut, IorD, Address);
 assign WriteDataMem = Bout;
 Memoria Memoria (Address, clock, wr, WriteDataMem, MemData);
 Mux32_2 ALU_A_Mux (PC, Aout, ALUSrcA, ALU_A);
-Mux32_4 ALU_B_Mux (Bout, 32'h4, extended_number, shifted_extended_number, 0, ALU_B); //Se der ruim observar numeros direto na entrada
+Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
 ula32 ALU (ALU_A, ALU_B, ALUOp, Alu);
 Instr_Reg IReg (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
 Registrador MDR_reg (clock, reset, MemData, MDR);
