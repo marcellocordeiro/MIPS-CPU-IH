@@ -1,9 +1,12 @@
 module Unidade_de_Controle (input logic clock, reset,
-                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst,AWrite,BWrite,
-                            output logic [1:0] PCSource, AluSrcB, State_out,
+							input logic [4:0] opcode,
+							input logic [5:0] funct,
+                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst, AWrite, BWrite,
+                            output logic [1:0] PCSource, AluSrcB,
+                            output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
 
-enum logic [1:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode} state, nextState;
+enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, Jump} state, nextState;
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
 assign State_out = state;
@@ -31,7 +34,7 @@ always_comb
             BWrite = 1'bx;
 
             PCSource = 2'b00;
-            AluSrcB = 2'b01;
+            AluSrcB = 2'bxx;
 
             ALUOp = ADD;
 
@@ -87,13 +90,37 @@ always_comb
             MemReadWrite = 1'bx;
             MemtoReg = 1'bx;
             IRWrite = 1;
+            AluSrcA = 1'b0;
+            RegWrite = 1'bx;
+            RegDst = 1'bx;
+            AWrite = 1'bx;
+            BWrite = 1'bx;
+
+            PCSource = 2'b00;
+            AluSrcB = 2'b01;
+
+            ALUOp = ADD;
+            
+            if (opcode == 2)
+				nextState = Jump;
+			else
+				nextState = Fetch_PC;
+		end
+		
+		Jump: begin
+			PCWriteCond = 1'bx;
+            PCWrite = 1;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 1'bx;
+            IRWrite = 0;
             AluSrcA = 1'bx;
             RegWrite = 1'bx;
             RegDst = 1'bx;
             AWrite = 1'bx;
             BWrite = 1'bx;
 
-            PCSource = 2'bxx;
+            PCSource = 2;
             AluSrcB = 2'bxx;
 
             ALUOp = LOAD;
