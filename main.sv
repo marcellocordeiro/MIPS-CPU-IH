@@ -1,14 +1,19 @@
 module main (input logic clock, reset,
-             output logic [1:0] Estado,output logic [31:0] PC, PCin, Address);
+             output logic [1:0] Estado,
+             output logic [31:0] PC, PCin, Address, MemData,
+             output logic [5:0] I31_26,
+             output logic [4:0] I25_21, I20_16,
+             output logic [15:0] I15_0);
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 logic [2:0] ALUOpOut;
 assign ALUOpOut = ALUOp;
 
-logic [31:0] MemData, MDR, AluOut, Ain, Bin, jmp_adr, WriteDataReg;
-logic [5:0] I31_26;
-logic [4:0] I25_21, I20_16;
-logic [15:0] I15_0;
+//logic [31:0] MemData;
+logic [31:0] MDR, AluOut, Ain, Bin, jmp_adr, WriteDataReg;
+//logic [5:0] I31_26;
+//logic [4:0] I25_21, I20_16;
+//logic [15:0] I15_0;
 logic [4:0] WriteRegister;
 
 //Entradas
