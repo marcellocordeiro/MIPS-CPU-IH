@@ -1,5 +1,5 @@
 module Unidade_de_Controle (input logic clock, reset,
-                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst,
+                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst,AWrite,BWrite,
                             output logic [1:0] PCSource, AluSrcB, State_out,
                             output logic [2:0] ALUOpOut);
 
@@ -19,16 +19,18 @@ always_comb
     case (state)
         Fetch_PC: begin
             PCWriteCond = 1'bx;
-            PCWrite = 1'b1;
-            IorD = 1'bx;
-            MemReadWrite = 1'bx;
+            PCWrite = 1;
+            IorD = 0;
+            MemReadWrite = 0;
             MemtoReg = 1'bx;
             IRWrite = 1'bx;
             AluSrcA = 1'bx;
             RegWrite = 1'bx;
             RegDst = 1'bx;
+            AWrite = 1'bx;
+            BWrite = 1'bx;
 
-            PCSource = 2'bxx;
+            PCSource = 2'b00;
             AluSrcB = 2'bxx;
 
             ALUOp = LOAD;
@@ -38,38 +40,42 @@ always_comb
 
         Fetch_E1: begin // espera 1
             PCWriteCond = 1'bx;
-            PCWrite = 1'bx;
-            IorD = 1'bx;
-            MemReadWrite = 1'bx;
+            PCWrite = 0;
+            IorD = 0;
+            MemReadWrite = 0;
             MemtoReg = 1'bx;
             IRWrite = 1'bx;
             AluSrcA = 1'bx;
             RegWrite = 1'bx;
             RegDst = 1'bx;
+            AWrite = 1'bx;
+            BWrite = 1'bx;
 
             PCSource = 2'bxx;
             AluSrcB = 2'bxx;
 
-            ALUOp = ADD;
+            ALUOp = LOAD;
             
             nextState = Fetch_E2;
         end
 
         Fetch_E2: begin // espera 2
             PCWriteCond = 1'bx;
-            PCWrite = 1'bx;
-            IorD = 1'bx;
-            MemReadWrite = 1'bx;
+            PCWrite = 0;
+            IorD = 1'b0;
+            MemReadWrite = 1'b0;
             MemtoReg = 1'bx;
             IRWrite = 1'bx;
-            AluSrcA = 1'bx;
+            AluSrcA = 0;
             RegWrite = 1'bx;
             RegDst = 1'bx;
+            AWrite = 1'bx;
+            BWrite = 1'bx;
 
             PCSource = 2'bxx;
             AluSrcB = 1; // seleciona a constante 4 no mux
 
-            ALUOp = LOAD;
+            ALUOp = ADD;
 
             nextState = Fetch_PC;
         end
