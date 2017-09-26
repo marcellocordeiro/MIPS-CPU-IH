@@ -1,12 +1,12 @@
 module Unidade_de_Controle (input logic clock, reset,
 							input logic [4:0] opcode,
 							input logic [5:0] funct,
-                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst, AWrite, BWrite,
+                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst, AWrite, BWrite, AluOutWrite,
                             output logic [1:0] PCSource, AluSrcB,
                             output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
 
-enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, Jump} state, nextState;
+enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, Add_Read, Add_Store, Jump} state, nextState;
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
 assign State_out = state;
@@ -26,12 +26,13 @@ always_comb
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 1'bx;
-            IRWrite = 1'bx;
+            IRWrite = 0;
             AluSrcA = 1'b0;
-            RegWrite = 1'bx;
+            RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 1'bx;
-            BWrite = 1'bx;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
 
             PCSource = 2'b00;
             AluSrcB = 2'bxx;
@@ -47,12 +48,13 @@ always_comb
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 1'bx;
-            IRWrite = 1'bx;
+            IRWrite = 0;
             AluSrcA = 1'b0;
-            RegWrite = 1'bx;
+            RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 1'bx;
-            BWrite = 1'bx;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
 
             PCSource = 2'b00;
             AluSrcB = 2'b01;
@@ -68,12 +70,13 @@ always_comb
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 1'bx;
-            IRWrite = 1'bx;
+            IRWrite = 1;
             AluSrcA = 1'b0;
-            RegWrite = 1'bx;
+            RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 1'bx;
-            BWrite = 1'bx;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
 
             PCSource = 2'b00;
             AluSrcB = 2'b01;
@@ -89,12 +92,13 @@ always_comb
             IorD = 1'bx;
             MemReadWrite = 1'bx;
             MemtoReg = 1'bx;
-            IRWrite = 1;
+            IRWrite = 0;
             AluSrcA = 1'b0;
-            RegWrite = 1'bx;
+            RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 1'bx;
-            BWrite = 1'bx;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
 
             PCSource = 2'b00;
             AluSrcB = 2'b01;
@@ -103,8 +107,57 @@ always_comb
             
             if (opcode == 2)
 				nextState = Jump;
+			else if (opcode == 0)
+				if (funct == 6'h20)
+					nextState = Add_Read;
+				else
+					nextState = Fetch_PC;
 			else
 				nextState = Fetch_PC;
+		end
+		
+		Add_Read: begin
+			PCWriteCond = 1'bx;
+            PCWrite = 0;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 1'bx;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'bx;
+            AWrite = 1;
+            BWrite = 1;
+            AluOutWrite = 1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = Add_Store;
+		end
+		
+		Add_Store: begin
+			PCWriteCond = 1'bx;
+            PCWrite = 0;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 0;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 1;
+            RegDst = 1;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = Fetch_PC;
 		end
 		
 		Jump: begin
@@ -115,10 +168,11 @@ always_comb
             MemtoReg = 1'bx;
             IRWrite = 0;
             AluSrcA = 1'bx;
-            RegWrite = 1'bx;
+            RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 1'bx;
-            BWrite = 1'bx;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
 
             PCSource = 2;
             AluSrcB = 2'bxx;
@@ -130,35 +184,3 @@ always_comb
     endcase
 
 endmodule: Unidade_de_Controle
-
-/*
-always_comb
-    case (state)
-        Fetch_PC: begin
-            PCWrite = 1;
-            nextState = Fetch_E1;
-            IorD = 0;
-            MemReadWrite = 0;
-            ALUSrcA = 0;
-            ALUSrcB = 1;
-            ALUOp = ADD;
-            end
-        Fetch_E1: begin
-            PCWrite = 0;
-            nextState = Fetch_E2;
-            IorD = 0;
-            MemReadWrite = 0;
-            ALUSrcA = 0;
-            ALUSrcB = 1;
-            ALUOp = ADD;
-        end
-        Fetch_E2: begin
-            PCWrite = 0;
-            nextState = Fetch_PC;
-            IorD = 0;
-            MemReadWrite = 0;
-            ALUSrcA = 0;
-            ALUSrcB = 1;
-            ALUOp = ADD;
-        end
-*/
