@@ -116,8 +116,6 @@ always_comb
 			else if (opcode == 6'h0)
 				if (funct == 6'h20)
 					nextState = Arit_Read;
-				else if (funct == 6'h20)
-					nextState = Add_Read;
 				else if(funct == 6'hd || funct == 6'h0)
 					nextState = Break;
 				else 
