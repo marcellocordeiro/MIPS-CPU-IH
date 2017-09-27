@@ -49,7 +49,7 @@ Mux32_3 write_data_regbank_mux (.in0(Alu), .in1(MDR), .in2({I15_0, 16'b000000000
 Mux5_2 write_register_regbank_mux (I20_16, I15_0 [15:11], RegDst, WriteRegister);
 Banco_reg regbank (clock, reset, RegWrite, I25_21, I20_16, WriteRegister, WriteDataReg, Ain, Bin);
 
-//ULA
+//ALU
 Registrador A_reg (clock, reset, AWrite, Ain, Aout); // ligado ao regbank
 Registrador B_reg (clock, reset, BWrite, Bin, Bout); // ligado ao regbank
 Mux32_2 ALU_A_Mux (PC, Aout, AluSrcA, ALU_A);

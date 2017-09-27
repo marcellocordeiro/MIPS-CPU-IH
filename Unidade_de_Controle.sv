@@ -116,7 +116,11 @@ always_comb
 			else if (opcode == 6'h0)
 				if (funct == 6'h20)
 					nextState = Arit_Read;
-				else
+				else if (funct == 6'h20)
+					nextState = Add_Read;
+				else if(funct == 6'hd || funct == 6'h0)
+					nextState = Break;
+				else 
 					nextState = Fetch_PC;
 			else if (opcode == 6'h2b || opcode == 6'h23)
 				nextState = MemComputation;
@@ -188,7 +192,30 @@ always_comb
             nextState = Fetch_PC;
 		end
 	
-		
+		Break: begin
+			PCWrite = 0;
+            IorD = 0;
+            MemReadWrite = 0;
+            MemtoReg = 0;
+            IRWrite = 0;
+            AluSrcA = 0;
+            RegWrite = 0;
+            RegDst = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = LOAD;
+            
+            if(funct == 6'h0)	//nop
+				nextState = Fetch_PC;
+			else				//break
+				nextState = Break;
+		end
 	
 		MemComputation: begin
             PCWrite = 0;
