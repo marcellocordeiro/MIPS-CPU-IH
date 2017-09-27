@@ -8,8 +8,8 @@ module Unidade_de_Controle (input logic clock, reset,
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	//Fetch e Decode
 				  Arit_Read, Arit_Store, Break,			//Tipo R
-				  BeqAddress, MemComputation, MemComputation_E1, MemComputation_E2,		//Tipo I
-				  MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, MemWrite_E1, 	//Tipo I
+				  BeqAddress, MemComputation, MemComputation_E1, MemComputation_E2,	BeqCompare,	//Tipo I
+				  MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, MemWrite_E1,	//Tipo I
 				  Lui, Jump} state, nextState;			//Tipo J
 				  
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
@@ -459,6 +459,57 @@ always_comb
 
             nextState = Fetch_PC;
 		end
+		
+		BeqAddress: begin
+			
+			PCWrite = 0;
+            IorD = 0;
+            MemReadWrite = 0;
+            MemtoReg = 2;
+            IRWrite = 0;
+            AluSrcA = 0;
+            RegWrite = 0;
+            RegDst = 0;
+            AWrite = 1;
+            BWrite = 1;
+            AluOutWrite = 1;
+            MDRWrite = 0;
+
+            PCSource = 0;
+            AluSrcB = 2;
+
+            ALUOp = ADD;
+            nextState = BeqCompare;
+            
+			end	
+			
+		BeqCompare: begin
+			
+			PCWrite = 1;
+            IorD = 0;
+            MemReadWrite = 0;
+            MemtoReg = 2;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 0;
+            AWrite = 1;
+            BWrite = 1;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+            
+            AluSrcB = 0;
+
+            ALUOp = SUB;
+            
+            if( Zero == 0) // Talvez de ruim, mas não vai!!
+				PCSource = 1;
+			else 
+				PCSource = 0;
+            
+            nextState = Fetch_PC;
+            
+			end	
 	
     endcase
 
