@@ -1,5 +1,5 @@
 module Unidade_de_Controle (input logic clock, reset,
-							input logic [4:0] opcode,
+							input logic [5:0] opcode,
 							input logic [5:0] funct,
                             output logic PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite,
 										 AluSrcA, RegWrite, RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
@@ -109,13 +109,13 @@ always_comb
             
             if (opcode == 6'h2)
 				nextState = Jump;
-			else if (opcode == 6'h0)
+			/*else if (opcode == 6'h0)
 				begin	
 					if (funct == 6'h20)
 						nextState = Add_Read;
 					else
 						nextState = Fetch_PC;
-				end
+				end*/
 			else if (opcode == 6'h2b)
 				nextState = MemComputation;
 			else
