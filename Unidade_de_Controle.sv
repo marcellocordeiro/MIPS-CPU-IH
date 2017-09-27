@@ -109,13 +109,13 @@ always_comb
             
             if (opcode == 6'h2)
 				nextState = Jump;
-			/*else if (opcode == 6'h0)
+			else if (opcode == 6'h0)
 				begin	
 					if (funct == 6'h20)
 						nextState = Add_Read;
 					else
 						nextState = Fetch_PC;
-				end*/
+				end
 			else if (opcode == 6'h2b)
 				nextState = MemComputation;
 			else
