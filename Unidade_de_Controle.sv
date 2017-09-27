@@ -1,7 +1,8 @@
 module Unidade_de_Controle (input logic clock, reset,
 							input logic [4:0] opcode,
 							input logic [5:0] funct,
-                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite, AluSrcA, RegWrite, RegDst, AWrite, BWrite, AluOutWrite,
+                            output logic PCWriteCond, PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite,
+										 AluSrcA, RegWrite, RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
                             output logic [1:0] PCSource, AluSrcB,
                             output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
@@ -33,6 +34,7 @@ always_comb
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
+            MDRWrite = 1'bx;
 
             PCSource = 2'b00;
             AluSrcB = 2'bxx;
@@ -55,7 +57,8 @@ always_comb
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
-
+			MDRWrite = 1'bx;
+			
             PCSource = 2'b00;
             AluSrcB = 2'b01;
 
@@ -77,6 +80,7 @@ always_comb
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
+            MDRWrite = 1'bx;
 
             PCSource = 2'b00;
             AluSrcB = 2'b01;
@@ -99,9 +103,11 @@ always_comb
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
+            MDRWrite = 1'bx;
 
             PCSource = 2'b00;
             AluSrcB = 2'b01;
+            
 
             ALUOp = ADD;
             
@@ -129,6 +135,7 @@ always_comb
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
+            MDRWrite = 1'bx;
 
             PCSource = 0;
             AluSrcB = 0;
@@ -151,6 +158,7 @@ always_comb
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
+            MDRWrite = 1'bx;
 
             PCSource = 0;
             AluSrcB = 0;
@@ -173,6 +181,7 @@ always_comb
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
+            MDRWrite = 1'bx;
 
             PCSource = 2;
             AluSrcB = 2'bxx;

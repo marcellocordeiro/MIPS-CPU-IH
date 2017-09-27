@@ -26,7 +26,7 @@ logic [31:0] extended_number, shifted_extended_number;
 logic [31:0] ALU_A, ALU_B;
 
 //Unidade de Controle
-logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, MemtoReg, RegWrite, PCWriteCond;
+logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, MemtoReg, RegWrite, PCWriteCond, MDRWrite;
 logic [2:0] AluSrcB;
 logic [1:0] PCSource;
 
@@ -34,7 +34,7 @@ Unidade_de_Controle UC (.clock(clock), .reset(reset),
 						.opcode(I31_26), .funct(I15_0[5:0]),
 						.PCWriteCond(PCWriteCond), .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
 						.AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
-						.PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado));
+						.PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite));
 
 Registrador PC_reg (clock, reset, PCWrite, PCin, PC);
 
@@ -43,7 +43,7 @@ Mux32_2 MemMux (PC, AluOut, IorD, Address);
 Memoria Memoria (Address, clock, wr, WriteDataMem, MemData);
 
 Instr_Reg IReg (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
-Registrador MDR_reg (clock, reset, MemData, MDR);
+Registrador MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
 Mux32_2 write_data_regbank_mux (Alu, MDR, MemtoReg, WriteDataReg);
 Mux5_2 write_register_regbank_mux (I20_16, I15_0 [15:11], RegDst, WriteRegister);
