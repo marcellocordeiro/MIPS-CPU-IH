@@ -1,6 +1,6 @@
 module main (input logic clock, reset,
              output logic [5:0] Estado,
-             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg,
+             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0);
@@ -10,8 +10,8 @@ logic [2:0] ALUOpOut;
 assign ALUOpOut = ALUOp;
 
 //logic [31:0] MemData;
-logic [31:0] MDR, jmp_adr, Ain, Bin;
-//logic [31:0] AluOut, WriteDataReg;
+logic [31:0] jmp_adr, Ain, Bin;
+//logic [31:0] AluOut, WriteDataReg, MDR;
 //logic [5:0] I31_26;
 //logic [4:0] I25_21, I20_16;
 //logic [15:0] I15_0;
@@ -26,9 +26,9 @@ logic [31:0] extended_number, shifted_extended_number;
 logic [31:0] ALU_A, ALU_B;
 
 //Unidade de Controle
-logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, MemtoReg, RegWrite, MDRWrite;
+logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, RegWrite, MDRWrite;
 logic [2:0] AluSrcB;
-logic [1:0] PCSource;
+logic [1:0] PCSource, MemtoReg;
 
 Unidade_de_Controle UC (.clock(clock), .reset(reset),
 						.opcode(I31_26), .funct(I15_0[5:0]),
@@ -45,7 +45,7 @@ Memoria Memoria (Address, clock, wr, WriteDataMem, MemData);
 Instr_Reg IReg (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
 Registrador MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32_2 write_data_regbank_mux (Alu, MDR, MemtoReg, WriteDataReg);
+Mux32_3 write_data_regbank_mux (.in0(Alu), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .sel(MemtoReg), .out(WriteDataReg));
 Mux5_2 write_register_regbank_mux (I20_16, I15_0 [15:11], RegDst, WriteRegister);
 Banco_reg regbank (clock, reset, RegWrite, I25_21, I20_16, WriteRegister, WriteDataReg, Ain, Bin);
 

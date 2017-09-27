@@ -1,13 +1,17 @@
 module Unidade_de_Controle (input logic clock, reset,
-							input logic [5:0] opcode,
-							input logic [5:0] funct,
-                            output logic PCWrite, IorD, MemReadWrite, MemtoReg, IRWrite,
-										 AluSrcA, RegWrite, RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
-                            output logic [1:0] PCSource, AluSrcB,
+							input logic [5:0] opcode, funct,
+                            output logic PCWrite, IorD, MemReadWrite, IRWrite, AluSrcA, RegWrite,
+										 RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
+                            output logic [1:0] PCSource, AluSrcB, MemtoReg,
                             output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
 
-enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, Add_Read, Add_Store, Jump, MemComputation, MemComputation_E1, MemComputation_E2} state, nextState;
+enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	//Fetch e Decode
+				  Arit_Read, Arit_Store, Break,			//Tipo R
+				  BeqAddress, MemComputation, MemComputation_E1, MemComputation_E2,		//Tipo I
+				  MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, MemWrite_E1, 	//Tipo I
+				  Lui, Jump} state, nextState;			//Tipo J
+				  
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
 assign State_out = state;
@@ -25,7 +29,7 @@ always_comb
             PCWrite = 1;
             IorD = 0;
             MemReadWrite = 0;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1'b0;
             RegWrite = 0;
@@ -47,7 +51,7 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1'b0;
             RegWrite = 0;
@@ -69,7 +73,7 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 1;
             AluSrcA = 1'b0;
             RegWrite = 0;
@@ -91,7 +95,7 @@ always_comb
             PCWrite = 0;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1'b0;
             RegWrite = 0;
@@ -110,23 +114,23 @@ always_comb
             if (opcode == 6'h2)
 				nextState = Jump;
 			else if (opcode == 6'h0)
-				begin	
-					if (funct == 6'h20)
-						nextState = Add_Read;
-					else
-						nextState = Fetch_PC;
-				end
-			else if (opcode == 6'h2b)
+				if (funct == 6'h20)
+					nextState = Arit_Read;
+				else
+					nextState = Fetch_PC;
+			else if (opcode == 6'h2b || opcode == 6'h23)
 				nextState = MemComputation;
+			else if (opcode == 6'h0f)
+				nextState = Lui;
 			else
 				nextState = Fetch_PC;
 		end
 		
-		Add_Read: begin
+		Arit_Read: begin
             PCWrite = 0;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
@@ -139,12 +143,21 @@ always_comb
             PCSource = 0;
             AluSrcB = 0;
 
-            ALUOp = ADD;
+			if (funct == 6'h20)		///Mudei o ALUOp (agora depende de funct)
+				ALUOp = ADD;
+			else if (funct == 6'h24)
+				ALUOp = AND;
+			else if (funct == 6'h22)
+				ALUOp = SUB;
+			else if (funct == 6'h26)
+				ALUOp = XOR;
+			else
+				ALUOp = LOAD;
 
-            nextState = Add_Store;
+            nextState = Arit_Store;
 		end
 		
-		Add_Store: begin
+		Arit_Store: begin
             PCWrite = 0;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
@@ -161,38 +174,27 @@ always_comb
             PCSource = 0;
             AluSrcB = 0;
 
-            ALUOp = ADD;
+			if (funct == 6'h20)		///Mudei o ALUOp (agora depende de funct)
+				ALUOp = ADD;
+			else if (funct == 6'h24)
+				ALUOp = AND;
+			else if (funct == 6'h22)
+				ALUOp = SUB;
+			else if (funct == 6'h26)
+				ALUOp = XOR;
+			else
+				ALUOp = LOAD;
 
             nextState = Fetch_PC;
 		end
+	
 		
-		Jump: begin
-            PCWrite = 1;
-            IorD = 1'bx;
-            MemReadWrite = 1'bx;
-            MemtoReg = 1'bx;
-            IRWrite = 0;
-            AluSrcA = 1'bx;
-            RegWrite = 0;
-            RegDst = 1'bx;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 1'bx;
-
-            PCSource = 2;
-            AluSrcB = 2'bxx;
-
-            ALUOp = LOAD;
-
-            nextState = Fetch_PC;
-		end
-		
+	
 		MemComputation: begin
             PCWrite = 0;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
@@ -214,7 +216,7 @@ always_comb
             PCWrite = 0;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
@@ -236,7 +238,7 @@ always_comb
             PCWrite = 0;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 1'bx;
+            MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
@@ -250,9 +252,190 @@ always_comb
             AluSrcB = 2;
 
             ALUOp = ADD;
+			
+			if(opcode == 6'h23)
+				nextState = MemRead;
+			else
+				nextState = MemWrite;
+		end
+		
+		MemRead: begin
+            PCWrite = 0;
+            IorD = 1'b1;
+            MemReadWrite = 1'b0;
+            MemtoReg = 1;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'b0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'b1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = MemRead_E1;
+		end
+		
+		MemRead_E1: begin
+            PCWrite = 0;
+            IorD = 1'b1;
+            MemReadWrite = 1'b0;
+            MemtoReg = 1;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'b0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'b1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = MemRead_E2;
+		end
+		
+		MemRead_E2: begin
+            PCWrite = 0;
+            IorD = 1'b1;
+            MemReadWrite = 1'b0;
+            MemtoReg = 1;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'b0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'b1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = MemRead_E3;
+		end
+		
+		MemRead_E3: begin
+            PCWrite = 0;
+            IorD = 1'b1;
+            MemReadWrite = 1'b0;
+            MemtoReg = 1;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'b0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'b1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
 
             nextState = Fetch_PC;
 		end
+		
+		MemWrite: begin
+            PCWrite = 0;
+            IorD = 1'b1;
+            MemReadWrite = 1'b1;
+            MemtoReg = 1;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'b0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'b1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = MemWrite_E1;
+		end
+		
+		MemWrite_E1: begin
+            PCWrite = 0;
+            IorD = 1'b1;
+            MemReadWrite = 1'b1;
+            MemtoReg = 1;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'b0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'b1;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = ADD;
+
+            nextState = Fetch_PC;
+		end
+		
+		Lui: begin
+			PCWrite = 0;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 2;
+            IRWrite = 0;
+            AluSrcA = 1'bx;
+            RegWrite = 1;
+            RegDst = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'bx;
+
+            PCSource = 0;
+            AluSrcB = 2'bxx;
+
+			ALUOp = LOAD;
+
+            nextState = Fetch_PC;
+		end
+    
+    	Jump: begin
+            PCWrite = 1;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 2'bxx;
+            IRWrite = 0;
+            AluSrcA = 1'bx;
+            RegWrite = 0;
+            RegDst = 1'bx;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'bx;
+
+            PCSource = 2;
+            AluSrcB = 2'bxx;
+
+            ALUOp = LOAD;
+
+            nextState = Fetch_PC;
+		end
+	
     endcase
+
 
 endmodule: Unidade_de_Controle
