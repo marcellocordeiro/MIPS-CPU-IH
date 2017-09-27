@@ -1,7 +1,7 @@
 module Unidade_de_Controle (input logic clock, reset,
 							input logic [5:0] opcode, funct,
                             output logic PCWrite, IorD, MemReadWrite, IRWrite, AluSrcA, RegWrite,
-										 RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
+										 RegDst, AWrite, BWrite, AluOutWrite, MDRWrite, Zero,
                             output logic [1:0] PCSource, AluSrcB, MemtoReg,
                             output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
