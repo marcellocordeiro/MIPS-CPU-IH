@@ -26,13 +26,13 @@ logic [31:0] extended_number, shifted_extended_number;
 logic [31:0] ALU_A, ALU_B;
 
 //Unidade de Controle
-logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, MemtoReg, RegWrite, PCWriteCond, MDRWrite;
+logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, MemtoReg, RegWrite, MDRWrite;
 logic [2:0] AluSrcB;
 logic [1:0] PCSource;
 
 Unidade_de_Controle UC (.clock(clock), .reset(reset),
 						.opcode(I31_26), .funct(I15_0[5:0]),
-						.PCWriteCond(PCWriteCond), .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
+						.PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
 						.AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
 						.PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite));
 
@@ -54,7 +54,7 @@ Registrador A_reg (clock, reset, AWrite, Ain, Aout); // ligado ao regbank
 Registrador B_reg (clock, reset, BWrite, Bin, Bout); // ligado ao regbank
 Mux32_2 ALU_A_Mux (PC, Aout, AluSrcA, ALU_A);
 Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
-ula32 ALU (ALU_A, ALU_B, ALUOp, Alu);
+ula32 ALU (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu));
 Registrador AluOut_reg (clock, reset, AluOutWrite, Alu, AluOut); 
 
 PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
