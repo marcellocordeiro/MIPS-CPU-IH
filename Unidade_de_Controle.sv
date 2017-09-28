@@ -383,7 +383,6 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'b1;
-            //PC_4Write = 0;
 
             PCSource = 0;
             AluSrcB = 0;
@@ -429,7 +428,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'b1;
-            //PC_4Write = 0;
+
 
             PCSource = 0;
             AluSrcB = 0;
@@ -510,8 +509,7 @@ always_comb
 			
 		BeqCompare: begin
 			
-			PCWrite = 1;
-            IorD = 0;
+			IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2;
             IRWrite = 0;
@@ -526,10 +524,15 @@ always_comb
             ALUOp = SUB;
             
             if( Zero == 1 ) // Talvez de ruim, mas não vai!!
-				PCSource = 1;
-				
+				begin
+					PCSource = 1;
+					PCWrite = 1;
+				end
 			else 
-				PCSource = 0;
+				begin
+					PCSource = 0;
+					PCWrite = 0;
+				end
 				
 				
             
