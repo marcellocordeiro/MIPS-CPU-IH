@@ -24,15 +24,16 @@ logic [31:0] WriteDataMem;
 logic [31:0] extended_number, shifted_extended_number;
 //logic [31:0] Aout, Bout, Alu;
 logic [31:0] ALU_A, ALU_B;
+logic [31:0] PC_4Out;
 
 //Unidade de Controle
-logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, RegWrite, MDRWrite, Zero;
+logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, RegWrite, MDRWrite, Zero,  PC_4Write;
 logic [2:0] AluSrcB;
 logic [1:0] PCSource, MemtoReg;
 
 Unidade_de_Controle UC (.clock(clock), .reset(reset),
 						.opcode(I31_26), .funct(I15_0[5:0]),
-						.PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
+						.PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite), .PC_4Write(PC_4Write),
 						.AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
 						.PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero));
 
@@ -57,8 +58,10 @@ Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, A
 ula32 ALU (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero));
 Registrador AluOut_reg (clock, reset, AluOutWrite, Alu, AluOut); 
 
+Registrador PC_4 (.Clk(clock), .Reset(reset), .Load(PC_4Write), .Entrada(Alu), .Saida(PC_4Out)); //Guarda o valor de PC+4 para ser utilizado no BEQ
+
 PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
-Mux32_3 PC_mux (Alu, AluOut, jmp_adr, PCSource, PCin);
+Mux32_3 PC_mux (.in0(PC_4Out), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
 
 sign_extend SignExtend(I15_0,extended_number);
 Shift_left2 SL2(extended_number,shifted_extended_number);
