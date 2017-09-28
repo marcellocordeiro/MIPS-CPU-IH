@@ -83,6 +83,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
+          
 
             PCSource = 0;
             AluSrcB = 2'b01;
@@ -125,7 +126,7 @@ always_comb
 				nextState = MemComputation;
 			else if (opcode == 6'h0f)
 				nextState = Lui;
-			else if (opcode == 6'h4)
+			else if (opcode == 6'h4 || opcode == 6'h5 )
 				nextState = BeqAddress;
 			else
 				nextState = Fetch_PC;
@@ -144,11 +145,11 @@ always_comb
             BWrite = 1;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-
+            
             PCSource = 0;
             AluSrcB = 0;
 
-			if (funct == 6'h20)
+			if (funct == 6'h20)		///Mudei o ALUOp (agora depende de funct)
 				ALUOp = ADD;
 			else if (funct == 6'h24)
 				ALUOp = AND;
@@ -179,7 +180,7 @@ always_comb
             PCSource = 0;
             AluSrcB = 0;
 
-			if (funct == 6'h20)
+			if (funct == 6'h20)		///Mudei o ALUOp (agora depende de funct)
 				ALUOp = ADD;
 			else if (funct == 6'h24)
 				ALUOp = AND;
@@ -194,6 +195,7 @@ always_comb
 		end
 	
 		Break: begin
+			
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 0;
@@ -299,7 +301,7 @@ always_comb
             MemtoReg = 1;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 0;
+            RegWrite = 1;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -321,7 +323,7 @@ always_comb
             MemtoReg = 1;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 0;
+            RegWrite = 1;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -343,7 +345,7 @@ always_comb
             MemtoReg = 1;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 0;
+            RegWrite = 1;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -365,7 +367,7 @@ always_comb
             MemtoReg = 1;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 0;
+            RegWrite = 1;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -470,6 +472,7 @@ always_comb
 		end
 		
 		BeqAddress: begin
+			
 			PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
@@ -488,9 +491,11 @@ always_comb
 
             ALUOp = ADD;
             nextState = BeqCompare;
-		end	
+            
+			end	
 			
 		BeqCompare: begin
+			
 			IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2;
@@ -504,21 +509,42 @@ always_comb
             MDRWrite = 0;           
             AluSrcB = 0;
             ALUOp = SUB;
+            if(opcode == 6'h4)
+				begin
+					if( Zero == 1 ) // Talvez de ruim, mas não vai!!
+						begin
+							PCSource = 1;
+							PCWrite = 1;
+						end
+					else 
+						begin
+							PCSource = 0;
+							PCWrite = 0;
+						end
+				end
+				
+			 else
+			 
+				begin
+					if( Zero != 1 ) // Talvez de ruim, mas não vai!!
+						begin
+							PCSource = 1;
+							PCWrite = 1;
+						end
+					else 
+						begin
+							PCSource = 0;
+							PCWrite = 0;
+						end
+				end	
+					
+				
             
-            if( Zero == 1 ) // Talvez de ruim, mas não vai!!
-				begin
-					PCSource = 1;
-					PCWrite = 1;
-				end
-			else 
-				begin
-					PCSource = 0;
-					PCWrite = 0;
-				end
-			
             nextState = Fetch_PC;
-		end	
+            
+			end	
 	
     endcase
+
 
 endmodule: Unidade_de_Controle
