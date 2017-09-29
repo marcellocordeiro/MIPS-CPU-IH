@@ -1,6 +1,7 @@
 module main (input logic clock, reset,
+			 output logic RegWrite, wr, IRWrite,
              output logic [5:0] Estado,
-             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR,
+             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0);
@@ -18,7 +19,7 @@ logic [31:0] jmp_adr, Ain, Bin;
 //logic [4:0] WriteRegister;
 
 //Entradas
-logic [31:0] WriteDataMem;
+//logic [31:0] WriteDataMem;
 
 //Saidas --> Entradas
 logic [31:0] extended_number, shifted_extended_number;
@@ -26,7 +27,7 @@ logic [31:0] extended_number, shifted_extended_number;
 logic [31:0] ALU_A, ALU_B;
 
 //Unidade de Controle
-logic PCWrite, wr, IorD, AluSrcA, IRWrite, RegDst, AWrite, BWrite, AluOutWrite, RegWrite, MDRWrite, Zero;
+logic PCWrite/*, wr*/, IorD, AluSrcA/*, IRWrite*/, RegDst, AWrite, BWrite, AluOutWrite/*, RegWrite*/, MDRWrite, Zero;
 logic [2:0] AluSrcB;
 logic [1:0] PCSource, MemtoReg;
 

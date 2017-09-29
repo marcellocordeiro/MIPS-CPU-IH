@@ -31,7 +31,7 @@ always_comb
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2'bxx;
-            IRWrite = 1;
+            IRWrite = 0;
             AluSrcA = 0;
             RegWrite = 0;
             RegDst = 1'bx;
@@ -53,7 +53,7 @@ always_comb
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2'bxx;
-            IRWrite = 1;
+            IRWrite = 0;
             AluSrcA = 0;
             RegWrite = 0;
             RegDst = 1'bx;
@@ -294,7 +294,7 @@ always_comb
 				nextState = MemWrite;
 		end
 		
-		MemRead: begin
+		MemRead: begin // corrigir/melhorar
             PCWrite = 0;
             IorD = 1'b1;
             MemReadWrite = 1'b0;
@@ -401,10 +401,11 @@ always_comb
 
             ALUOp = ADD;
 
-            nextState = MemWrite_E1;
+            //nextState = MemWrite_E1;
+            nextState = Fetch_PC;
 		end
 		
-		MemWrite_E1: begin
+		MemWrite_E1: begin // corrigir
             PCWrite = 0;
             IorD = 1'b1;
             MemReadWrite = 1'b1;
