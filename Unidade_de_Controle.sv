@@ -1,18 +1,18 @@
 module Unidade_de_Controle (input logic clock, reset,
                             input logic [5:0] opcode, funct,
-                            input logic Zero,
+                            input logic Zero_flag,
                             output logic PCWrite, IorD, MemReadWrite, IRWrite, AluSrcA, RegWrite,
                                          RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
                             output logic [1:0] PCSource, AluSrcB, MemtoReg,
                             output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
 
-enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	//Fetch e Decode
-                  Arit_Read, Arit_Store, Break,			//Tipo R
+enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	// Fetch e Decode
+                  Arit_Read, Arit_Store, Break, // Tipo R
                   BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2,	//Tipo I
-                  MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, MemWrite_E1,	//Tipo I
-                  Lui, Jump} state, nextState;			//Tipo J
-                  
+                  MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
+                  Lui, Jump} state, nextState; //Tipo J
+
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
 assign State_out = state;
@@ -26,7 +26,7 @@ always_ff@ (posedge clock, posedge reset)
 
 always_comb
     case (state)
-        Fetch_PC: begin // estado 0
+        Fetch_PC: begin
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
@@ -39,16 +39,16 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-                
+
             PCSource = 0;
             AluSrcB = 1;
-            
+
             ALUOp = ADD;
 
             nextState = Fetch_E1;
         end
 
-        Fetch_E1: begin // espera 1 // estado 1
+        Fetch_E1: begin // espera 1
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
@@ -61,7 +61,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             PCSource = 0;
             AluSrcB = 1;
 
@@ -70,7 +70,7 @@ always_comb
             nextState = Fetch_E2;
         end
 
-        Fetch_E2: begin // espera 2 // estado 2
+        Fetch_E2: begin // espera 2
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
@@ -83,7 +83,6 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-          
 
             PCSource = 0;
             AluSrcB = 2'b01;
@@ -92,8 +91,8 @@ always_comb
 
             nextState = Decode;
         end
-        
-        Decode: begin // estado 3
+
+        Decode: begin
             PCWrite = 1;
             IorD = 0;
             MemReadWrite = 0;
@@ -109,27 +108,8 @@ always_comb
 
             PCSource = 0;
             AluSrcB = 2'b01;
-            
 
             ALUOp = ADD;
-            
-            /*if (opcode == 6'h2)
-                nextState = Jump;
-            else if (opcode == 6'h0)
-                if (funct == 6'h20 || funct ==6'h22 || funct == 6'h26 || funct == 6'h24)
-                    nextState = Arit_Read;
-                else if(funct == 6'hd || funct == 6'h0)
-                    nextState = Break;
-                else 
-                    nextState = Fetch_PC;
-            else if (opcode == 6'h2b || opcode == 6'h23)
-                nextState = MemComputation;
-            else if (opcode == 6'h0f)
-                nextState = Lui;
-            else if (opcode == 6'h4 || opcode == 6'h5 )
-                nextState = BeqAddress;
-            else
-                nextState = Fetch_PC;*/
 
             case (opcode)
                 6'h0: begin
@@ -141,7 +121,8 @@ always_comb
                         default:
                             nextState = Fetch_PC;
                     endcase
-                    end
+                end
+
                 6'h2:
                     nextState = Jump;
                 6'h2b, 6'h23:
@@ -154,7 +135,7 @@ always_comb
                     nextState = Fetch_PC;
             endcase
         end
-        
+
         Arit_Read: begin
             PCWrite = 0;
             IorD = 1'bx;
@@ -168,21 +149,10 @@ always_comb
             BWrite = 1;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            
+
             PCSource = 0;
             AluSrcB = 0;
 
-            /*if (funct == 6'h20)		///Mudei o ALUOp (agora depende de funct)
-                ALUOp = ADD;
-            else if (funct == 6'h24)
-                ALUOp = AND;
-            else if (funct == 6'h22)
-                ALUOp = SUB;
-            else if (funct == 6'h26)
-                ALUOp = XOR;
-            else
-                ALUOp = LOAD;*/
-            
             case (funct)
                 6'h20:
                     ALUOp = ADD;
@@ -198,7 +168,7 @@ always_comb
 
             nextState = Arit_Store;
         end
-        
+
         Arit_Store: begin
             PCWrite = 0;
             IorD = 1'bx;
@@ -216,17 +186,6 @@ always_comb
             PCSource = 0;
             AluSrcB = 0;
 
-            /*if (funct == 6'h20)		///Mudei o ALUOp (agora depende de funct)
-                ALUOp = ADD;
-            else if (funct == 6'h24)
-                ALUOp = AND;
-            else if (funct == 6'h22)
-                ALUOp = SUB;
-            else if (funct == 6'h26)
-                ALUOp = XOR;
-            else
-                ALUOp = LOAD;*/
-            
             case (funct)
                 6'h20:
                     ALUOp = ADD;
@@ -242,7 +201,7 @@ always_comb
 
             nextState = Fetch_PC;
         end
-    
+
         Break: begin
             IorD = 0;
             MemReadWrite = 0;
@@ -260,15 +219,15 @@ always_comb
             AluSrcB = 0;
 
             ALUOp = LOAD;
-            
+
             PCWrite = 0;
-            
+
             if (funct == 6'h0) // nop
                 nextState = Fetch_PC;
             else // break
                 nextState = Break;
         end
-    
+
         MemComputation: begin
             PCWrite = 0;
             IorD = 1'bx;
@@ -290,7 +249,7 @@ always_comb
 
             nextState = MemComputation_E1;
         end
-        
+
         MemComputation_E1: begin
             PCWrite = 0;
             IorD = 1'bx;
@@ -312,7 +271,7 @@ always_comb
 
             nextState = MemComputation_E2;
         end
-        
+
         MemComputation_E2: begin
             PCWrite = 0;
             IorD = 1'bx;
@@ -331,8 +290,8 @@ always_comb
             AluSrcB = 2;
 
             ALUOp = ADD;
-            
-            if(opcode == 6'h23)
+
+            if (opcode == 6'h23)
                 nextState = MemRead;
             else
                 nextState = MemWrite;
@@ -445,33 +404,9 @@ always_comb
 
             ALUOp = ADD;
 
-            //nextState = MemWrite_E1;
             nextState = Fetch_PC;
         end
-        
-        MemWrite_E1: begin // corrigir
-            PCWrite = 0;
-            IorD = 1'b1;
-            MemReadWrite = 1'b1;
-            MemtoReg = 1;
-            IRWrite = 0;
-            AluSrcA = 1;
-            RegWrite = 0;
-            RegDst = 1'b0;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 1'b1;
 
-
-            PCSource = 0;
-            AluSrcB = 0;
-
-            ALUOp = ADD;
-
-            nextState = Fetch_PC;
-        end
-        
         Lui: begin
             PCWrite = 0;
             IorD = 1'bx;
@@ -493,7 +428,7 @@ always_comb
 
             nextState = Fetch_PC;
         end
-    
+
         Jump: begin
             PCWrite = 1;
             IorD = 1'bx;
@@ -515,7 +450,7 @@ always_comb
 
             nextState = Fetch_PC;
         end
-        
+
         BeqAddress: begin
             PCWrite = 0;
             IorD = 0;
@@ -536,8 +471,8 @@ always_comb
             ALUOp = ADD;
             nextState = BeqCompare;
             
-            end	
-            
+        end	
+
         BeqCompare: begin
             
             IorD = 0;
@@ -556,7 +491,7 @@ always_comb
             ALUOp = SUB;
 
             if (opcode == 6'h4) begin
-                if (Zero == 1) begin
+                if (Zero_flag == 1) begin
                     PCSource = 1;
                     PCWrite = 1;
                 end
@@ -566,7 +501,7 @@ always_comb
                 end
             end
             else begin
-                if (Zero != 1 ) begin
+                if (Zero_flag != 1) begin
                     PCSource = 1;
                     PCWrite = 1;
                 end
@@ -577,8 +512,7 @@ always_comb
             end
 
             nextState = Fetch_PC;
-
-            end
+        end
     endcase
 
 endmodule: Unidade_de_Controle
