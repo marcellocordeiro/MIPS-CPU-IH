@@ -1,5 +1,5 @@
 module main (input logic clock, reset,
-			 output logic RegWrite, wr, IRWrite,
+             output logic RegWrite, wr, IRWrite,
              output logic [5:0] Estado,
              output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem,
              output logic [5:0] I31_26,
@@ -32,10 +32,10 @@ logic [2:0] AluSrcB;
 logic [1:0] PCSource, MemtoReg;
 
 Unidade_de_Controle UC (.clock(clock), .reset(reset),
-						.opcode(I31_26), .funct(I15_0[5:0]),
-						.PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
-						.AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
-						.PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero_flag(Zero_flag));
+                        .opcode(I31_26), .funct(I15_0[5:0]),
+                        .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
+                        .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
+                        .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero_flag(Zero_flag));
 
 Registrador PC_reg (clock, reset, PCWrite, PCin, PC);
 

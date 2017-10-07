@@ -29,10 +29,10 @@ always_comb
         Fetch_PC: begin
             PCWrite = 0;
             IorD = 0;
-            MemReadWrite = 0;
+            MemReadWrite = 0; // read
             MemtoReg = 2'bxx;
             IRWrite = 0;
-            AluSrcA = 0;
+            AluSrcA = 0; // PC
             RegWrite = 0;
             RegDst = 1'bx;
             AWrite = 0;
@@ -43,7 +43,7 @@ always_comb
             PCSource = 0;
             AluSrcB = 1;
 
-            ALUOp = ADD;
+            ALUOp = LOAD;
 
             nextState = Fetch_E1;
         end
@@ -71,20 +71,20 @@ always_comb
         end
 
         Fetch_E2: begin // espera 2
-            PCWrite = 0;
+            PCWrite = 1;
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2'bxx;
             IRWrite = 1;
-            AluSrcA = 1'b0;
+            AluSrcA = 0; // PC
             RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 0;
-            BWrite = 0;
+            AWrite = 1;
+            BWrite = 1;
             AluOutWrite = 0;
             MDRWrite = 1;
 
-            PCSource = 0;
+            PCSource = 2'b00;
             AluSrcB = 2'b01;
 
             ALUOp = ADD;
@@ -93,21 +93,21 @@ always_comb
         end
 
         Decode: begin
-            PCWrite = 1;
+            PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2'bxx;
             IRWrite = 0;
-            AluSrcA = 1'b0;
+            AluSrcA = 0; // PC
             RegWrite = 0;
             RegDst = 1'bx;
             AWrite = 0;
             BWrite = 0;
-            AluOutWrite = 0;
+            AluOutWrite = 1; // {[31:28] PC, branch address << 2}
             MDRWrite = 0;
 
             PCSource = 0;
-            AluSrcB = 2'b01;
+            AluSrcB = 2'b11; // branch address << 2
 
             ALUOp = ADD;
 
