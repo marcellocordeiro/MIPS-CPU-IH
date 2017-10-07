@@ -101,9 +101,9 @@ always_comb
             AluSrcA = 0; // PC
             RegWrite = 0;
             RegDst = 1'bx;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 1; // {[31:28] PC, branch address << 2}
+            AWrite = 1;
+            BWrite = 1;
+            AluOutWrite = 1; // PC + branch address << 2
             MDRWrite = 0;
 
             PCSource = 0;
@@ -130,7 +130,7 @@ always_comb
                 6'h0f:
                     nextState = Lui;
                 6'h4, 6'h5:
-                    nextState = BeqAddress;
+                    nextState = BeqCompare;
                 default:
                     nextState = Fetch_PC;
             endcase
@@ -451,7 +451,7 @@ always_comb
             nextState = Fetch_PC;
         end
 
-        BeqAddress: begin
+        /*BeqAddress: begin
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
@@ -470,8 +470,7 @@ always_comb
 
             ALUOp = ADD;
             nextState = BeqCompare;
-            
-        end	
+        end*/
 
         BeqCompare: begin
             
@@ -486,7 +485,8 @@ always_comb
             BWrite = 1;
             AluOutWrite = 0;
             MDRWrite = 0;           
-            AluSrcB = 0;
+            
+            AluSrcB = 2'b00;
             
             ALUOp = SUB;
 
