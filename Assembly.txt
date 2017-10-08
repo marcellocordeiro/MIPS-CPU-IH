@@ -1,2 +1,3 @@
-addi 1 0 1
-andi 0 1 3
+addi 1 0 2
+addi 1 0 3
+andi 1 0 1

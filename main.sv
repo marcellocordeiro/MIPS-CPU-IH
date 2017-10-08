@@ -1,7 +1,7 @@
 module main (input logic clock, reset,
              output logic RegWrite, wr, IRWrite,
              output logic [5:0] Estado,
-             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem,
+             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0);
@@ -11,7 +11,7 @@ logic [2:0] ALUOpOut;
 assign ALUOpOut = ALUOp;
 
 //logic [31:0] MemData;
-logic [31:0] jmp_adr, Ain, Bin;
+logic [31:0] jmp_adr/*, Ain, Bin*/;
 //logic [31:0] AluOut, WriteDataReg, MDR;
 //logic [5:0] I31_26;
 //logic [4:0] I25_21, I20_16;
