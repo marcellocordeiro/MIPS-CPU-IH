@@ -131,10 +131,12 @@ always_comb
                     nextState = Lui;
                 6'h4, 6'h5:
                     nextState = BeqCompare;
-                6'h8: //addi
+                6'h8, 6'h9, 6'hc, 6'ha, 6'he: // arit com immediate
                     nextState = AritImmRead;
                 default:
                     nextState = Fetch_PC;
+
+                    
             endcase
         end
 
@@ -317,10 +319,10 @@ always_comb
             AluSrcB = 2'b10;
 
             case (opcode)
-                6'h8: // addi
+                6'h8: // addi // com check de overflow
                     ALUOp = ADD;
-                //6'h9: // addiu
-                //    ALUOp = ADD; // fazer
+                6'h9: // addiu // sem check de overflow
+                    ALUOp = ADD; // fazer
                 6'hc: // andi
                     ALUOp = AND;
                 6'ha: // slti
