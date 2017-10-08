@@ -69,5 +69,4 @@ set_global_assignment -name SYSTEMVERILOG_FILE Mux32_3.sv
 set_global_assignment -name SYSTEMVERILOG_FILE sign_extend.sv
 set_global_assignment -name SYSTEMVERILOG_FILE Shift_left2.sv
 set_global_assignment -name VECTOR_WAVEFORM_FILE teste.vwf
-set_global_assignment -name END_TIME "50 ns"
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

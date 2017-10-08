@@ -8,7 +8,7 @@ module Unidade_de_Controle (input logic clock, reset,
                             output logic [2:0] ALUOpOut);
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	// Fetch e Decode
-                  Arit_Read, Arit_Store, Break, // Tipo R
+                  Arit_Read, Arit_Store, Break, JumpRegister, // Tipo R
                   BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,	//Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump} state, nextState; //Tipo J
@@ -118,6 +118,8 @@ always_comb
                             nextState = Arit_Read;
                         6'hd, 6'h0:
                             nextState = Break;
+                        6'h8: // jr
+                            nextState = JumpRegister;
                         default:
                             nextState = Fetch_PC;
                     endcase
@@ -125,6 +127,8 @@ always_comb
 
                 6'h2:
                     nextState = Jump;
+                //6'h3:
+                //    nextState = jal;
                 6'h2b, 6'h23:
                     nextState = MemComputation;
                 6'h0f:
@@ -521,6 +525,28 @@ always_comb
             AluSrcB = 2'bxx;
 
             ALUOp = LOAD;
+
+            nextState = Fetch_PC;
+        end
+
+        JumpRegister: begin
+            PCWrite = 1;
+            IorD = 1'bx;
+            MemReadWrite = 1'bx;
+            MemtoReg = 2'bxx;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'bx;
+            AWrite = 1;
+            BWrite = 1;
+            AluOutWrite = 0;
+            MDRWrite = 1'bx;
+
+            PCSource = 0; // soma
+            AluSrcB = 2'b00;
+
+            ALUOp = ADD;
 
             nextState = Fetch_PC;
         end
