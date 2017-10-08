@@ -9,7 +9,7 @@ module Unidade_de_Controle (input logic clock, reset,
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	// Fetch e Decode
                   Arit_Read, Arit_Store, Break, // Tipo R
-                  BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2,	//Tipo I
+                  BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,	//Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump} state, nextState; //Tipo J
 
@@ -131,6 +131,8 @@ always_comb
                     nextState = Lui;
                 6'h4, 6'h5:
                     nextState = BeqCompare;
+                6'h8: //addi
+                    nextState = AritImmRead;
                 default:
                     nextState = Fetch_PC;
             endcase
@@ -138,8 +140,8 @@ always_comb
 
         Arit_Read: begin
             PCWrite = 0;
-            IorD = 1'bx;
-            MemReadWrite = 1'bx;
+            IorD = 0;
+            MemReadWrite = 0;
             MemtoReg = 2'bxx;
             IRWrite = 0;
             AluSrcA = 1;
@@ -171,7 +173,7 @@ always_comb
 
         Arit_Store: begin
             PCWrite = 0;
-            IorD = 1'bx;
+            IorD = 0;
             MemReadWrite = 1'bx;
             MemtoReg = 0;
             IRWrite = 0;
@@ -230,7 +232,7 @@ always_comb
 
         MemComputation: begin
             PCWrite = 0;
-            IorD = 1'bx;
+            IorD = 0;
             MemReadWrite = 1'bx;
             MemtoReg = 2'bxx;
             IRWrite = 0;
@@ -252,7 +254,7 @@ always_comb
 
         MemComputation_E1: begin
             PCWrite = 0;
-            IorD = 1'bx;
+            IorD = 0;
             MemReadWrite = 1'bx;
             MemtoReg = 2'bxx;
             IRWrite = 0;
@@ -274,7 +276,7 @@ always_comb
 
         MemComputation_E2: begin
             PCWrite = 0;
-            IorD = 1'bx;
+            IorD = 0;
             MemReadWrite = 1'bx;
             MemtoReg = 2'bxx;
             IRWrite = 0;
@@ -296,6 +298,76 @@ always_comb
             else
                 nextState = MemWrite;
         end
+
+        AritImmRead: begin
+            PCWrite = 0;
+            IorD = 0;
+            MemReadWrite = 1'bx;
+            MemtoReg = 2'bxx;
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 0;
+            RegDst = 1'bx;
+            AWrite = 1;
+            BWrite = 1;
+            AluOutWrite = 1;
+            MDRWrite = 1'bx;
+
+            PCSource = 2'b00;
+            AluSrcB = 2'b10;
+
+            case (opcode)
+                6'h8: // addi
+                    ALUOp = ADD;
+                //6'h9: // addiu
+                //    ALUOp = ADD; // fazer
+                6'hc: // andi
+                    ALUOp = AND;
+                6'ha: // slti
+                    ALUOp = LOAD; // fazer (seta rt se rs < imm) // fazer um load e verificar a saída Menor da ALU?
+                6'he: //sxori
+                    ALUOp = XOR;
+                default:
+                    ALUOp = LOAD;
+            endcase
+
+            nextState = AritImmStore;
+        end
+
+        AritImmStore: begin
+            PCWrite = 0;
+            IorD = 0;
+            MemReadWrite = 1'bx;
+            MemtoReg = 2'b00; // ?????
+            IRWrite = 0;
+            AluSrcA = 1;
+            RegWrite = 1;
+            RegDst = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+
+            PCSource = 0;
+            AluSrcB = 0;
+
+            ALUOp = LOAD;
+
+            /*case (funct)
+                6'h20:
+                    ALUOp = ADD;
+                6'h22:
+                    ALUOp = SUB;
+                6'h24:
+                    ALUOp = AND;
+                6'h26:
+                    ALUOp = XOR;
+                default:
+                    ALUOp = LOAD;
+            endcase*/
+
+            nextState = Fetch_PC;
+        end
         
         MemRead: begin // corrigir/melhorar
             PCWrite = 0;
@@ -304,7 +376,7 @@ always_comb
             MemtoReg = 1;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 1;
+            RegWrite = 0;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -326,7 +398,7 @@ always_comb
             MemtoReg = 1;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 1;
+            RegWrite = 0;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -345,10 +417,10 @@ always_comb
             PCWrite = 0;
             IorD = 1'b1;
             MemReadWrite = 1'b0;
-            MemtoReg = 1;
+            MemtoReg = 0;
             IRWrite = 0;
             AluSrcA = 1;
-            RegWrite = 1;
+            RegWrite = 0;
             RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
@@ -473,7 +545,7 @@ always_comb
         end*/
 
         BeqCompare: begin
-            
+
             IorD = 0;
             MemReadWrite = 0;
             MemtoReg = 2;
@@ -490,7 +562,7 @@ always_comb
             
             ALUOp = SUB;
 
-            if (opcode == 6'h4) begin
+            if (opcode == 6'h4) begin // beq
                 if (Zero_flag == 1) begin
                     PCSource = 1;
                     PCWrite = 1;
@@ -500,7 +572,7 @@ always_comb
                     PCWrite = 0;
                 end
             end
-            else begin
+            else begin // opcode == 6'5, bne
                 if (Zero_flag != 1) begin
                     PCSource = 1;
                     PCWrite = 1;

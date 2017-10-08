@@ -1,0 +1,14 @@
+lui 3 2
+lui 1 2
+and 4 3 3
+add 6 1 4
+sub 3 6 1
+bne 1 3 9
+beq 3 6 2
+j 10
+nop
+nop
+sw 3 80 0
+lw 9 80 0
+xor 3 9 6
+break
