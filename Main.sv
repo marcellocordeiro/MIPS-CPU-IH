@@ -1,4 +1,4 @@
-module main (input logic clock, reset,
+module Main (input logic clock, reset,
              output logic RegWrite, wr, IRWrite,
              output logic [5:0] Estado,
              output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin,
@@ -61,4 +61,4 @@ Mux32_3 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCi
 sign_extend SignExtend(I15_0,extended_number);
 Shift_left2 SL2(extended_number,shifted_extended_number);
 
-endmodule: main
+endmodule: Main
