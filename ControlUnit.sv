@@ -2,10 +2,10 @@ module ControlUnit (input logic clock, reset,
                             input logic [5:0] opcode, funct,
                             input logic Zero_flag,
                             output logic PCWrite, IorD, MemReadWrite, IRWrite, AluSrcA, RegWrite,
-                                         RegDst, AWrite, BWrite, AluOutWrite, MDRWrite,
-                            output logic [1:0] PCSource, AluSrcB, MemtoReg,
+                                         AWrite, BWrite, AluOutWrite, MDRWrite,
+                            output logic [4:0] PCSource, AluSrcB, MemtoReg,
                             output logic [5:0] State_out,
-                            output logic [2:0] ALUOpOut);
+                            output logic [2:0] RegDst, ALUOpOut);
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Arit_Read, Arit_Store, Break, JumpRegister, // Tipo R
@@ -37,8 +37,8 @@ always_comb
             MDRWrite = 1;
 
             IorD = 0; // PC
-            MemtoReg = 3'bxxx;
-            RegDst = 4'bxxxx;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0; // ALU
             
             AluSrcA = 0; // PC
@@ -83,8 +83,8 @@ always_comb
             MDRWrite = 1;
 
             IorD = 0; // PC
-            MemtoReg = 4'bxxxx; // ALUOutReg
-            RegDst = 3'bxxx; // rd
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0; // ALU
             
             AluSrcA = 0; // PC
@@ -150,11 +150,11 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 0;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
@@ -242,11 +242,11 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
@@ -264,11 +264,11 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
@@ -286,11 +286,11 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
@@ -311,11 +311,11 @@ always_comb
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
@@ -513,11 +513,11 @@ always_comb
             PCWrite = 1;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1'bx;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
@@ -535,11 +535,11 @@ always_comb
             PCWrite = 1;
             IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'bxx;
+            MemtoReg = 4'bxxxx;
             IRWrite = 0;
             AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'bx;
+            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 0;

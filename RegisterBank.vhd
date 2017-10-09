@@ -2,7 +2,7 @@
 -- Title        : Banco de Registradores
 -- Project      : CPU Multi-ciclo
 --------------------------------------------------------------------------------
--- File         : Banco_reg.vhd
+-- File         : RegisterBank.vhd
 -- Author       : Emannuel Gomes Macêdo (egm@cin.ufpe.br)
 --                Fernando Raposo Camara da Silva (frcs@cin.ufpe.br)
 --                Pedro Machado Manhães de Castro (pmmc@cin.ufpe.br)
@@ -49,7 +49,7 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.all;
 
 --Short name: breg
-ENTITY Banco_reg IS
+ENTITY RegisterBank IS
         PORT(
             Clk         : IN    STD_LOGIC;                      -- Clock do banco de registradores
             Reset       : IN    STD_LOGIC;                      -- Reinicializa o conteudo dos registradores
@@ -61,11 +61,11 @@ ENTITY Banco_reg IS
             ReadData1   : OUT   STD_LOGIC_VECTOR (31 downto 0); -- Mostra a informaçao presente no registrador #1
             ReadData2   : OUT   STD_LOGIC_VECTOR (31 downto 0)  -- Mostra a informação presente no registrador #2
             );
-END Banco_reg ;
+END RegisterBank ;
 
 -- Arquitetura que define comportamento do Banco de Registradores
 -- Simulation
-ARCHITECTURE behavioral_arch OF Banco_reg IS
+ARCHITECTURE behavioral_arch OF RegisterBank IS
 
     SIGNAL Reg0     : STD_LOGIC_VECTOR (31 downto 0);       -- Conjunto
     SIGNAL Reg1     : STD_LOGIC_VECTOR (31 downto 0);       -- das informações

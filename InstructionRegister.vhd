@@ -2,7 +2,7 @@
 -- Title        : Registrador de Intruções
 -- Project      : CPU multi-ciclo
 --------------------------------------------------------------------------------
--- File         : instr_reg.vhd
+-- File         : InstructionRegister.vhd
 -- Author       : Marcus Vinicius Lima e Machado (mvlm@cin.ufpe.br)
 --                Paulo Roberto Santana Oliveira Filho (prsof@cin.ufpe.br)
 --                Viviane Cristina Oliveira Aureliano (vcoa@cin.ufpe.br)
@@ -39,7 +39,7 @@ USE IEEE.STD_LOGIC_1164.ALL;
 
 
 -- Short name: ir
-ENTITY Instr_Reg IS
+ENTITY InstructionRegister IS
     PORT(
         Clk         : IN  STD_LOGIC;                     -- Clock do sistema
         Reset       : IN  STD_LOGIC;                     -- Reset
@@ -50,9 +50,9 @@ ENTITY Instr_Reg IS
         Instr20_16  : OUT STD_LOGIC_VECTOR(4  DOWNTO 0);     -- Bits 20 a 16 da instrução
         Instr15_0   : OUT STD_LOGIC_VECTOR(15 DOWNTO 0)  -- Bits 15 a 0 da instrução
     );
-END Instr_Reg;
+END InstructionRegister;
 
-ARCHITECTURE behavioral_arch OF Instr_Reg IS
+ARCHITECTURE behavioral_arch OF InstructionRegister IS
     BEGIN
 
     PROCESS(clk, reset)

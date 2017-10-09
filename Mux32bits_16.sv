@@ -1,4 +1,4 @@
-module Mux32bits_15 (input logic [31:0] in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11, in12, in13, in14, in15,
+module Mux32bits_16 (input logic [31:0] in0, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10, in11, in12, in13, in14, in15,
                      input logic [3:0] sel,
                      output logic [31:0] out);
 
@@ -22,4 +22,4 @@ always_comb
         15: out = in15;
     endcase
 
-endmodule: Mux32bits_15
+endmodule: Mux32bits_16

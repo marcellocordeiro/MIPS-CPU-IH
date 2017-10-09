@@ -2,7 +2,7 @@
 -- Title        : Registrador de Deslocamento
 -- Project      : CPU Multi-ciclo
 --------------------------------------------------------------------------------
--- File         : RegDesloc.vhd
+-- File         : ShiftRegister.vhd
 -- Author       : Emannuel Gomes Macêdo <egm@cin.ufpe.br>
 --                Fernando Raposo Camara da Silva <frcs@cin.ufpe.br>
 --                Pedro Machado Manhães de Castro <pmmc@cin.ufpe.br>
@@ -66,7 +66,7 @@ USE IEEE.STD_LOGIC_ARITH.ALL;
 USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Short name: desl
-ENTITY RegDesloc IS
+ENTITY ShiftRegister IS
         PORT(
             Clk     : IN    STD_LOGIC;  -- Clock do sistema
             Reset   : IN    STD_LOGIC;  -- Reset
@@ -75,11 +75,11 @@ ENTITY RegDesloc IS
             Entrada : IN    STD_LOGIC_vector (31 downto 0); -- Vetor a ser deslocado
             Saida   : OUT   STD_LOGIC_vector (31 downto 0)  -- Vetor deslocado
         );
-END RegDesloc;
+END ShiftRegister;
 
 -- Arquitetura que define o comportamento do registrador de deslocamento
 -- Simulation
-ARCHITECTURE behavioral_arch OF RegDesloc IS
+ARCHITECTURE behavioral_arch OF ShiftRegister IS
     signal temp     : STD_LOGIC_vector (31 downto 0);   -- Vetor temporário
 
     begin

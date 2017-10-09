@@ -2,7 +2,7 @@
 -- Title        : Memória da CPU
 -- Project      : CPU Multi-ciclo
 --------------------------------------------------------------------------------
--- File         : Memoria.vhd
+-- File         : Memory.vhd
 -- Author       : Emannuel Gomes Macêdo <egm@cin.ufpe.br>
 --                Fernando Raposo Camara da Silva <frcs@cin.ufpe.br>
 --                Pedro Machado Manhães de Castro <pmmc@cin.ufpe.br>
@@ -54,7 +54,7 @@ use work.ram_constants.all;
 --*************************************************************************
 
 --Short name: mem
-ENTITY Memoria IS
+ENTITY Memory IS
     PORT(
         Address : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);    -- Endereço de memória a ser lido
         Clock   : IN  STD_LOGIC;                        -- Clock do sistema
@@ -62,11 +62,11 @@ ENTITY Memoria IS
         Datain  : IN  STD_LOGIC_VECTOR(31 DOWNTO 0);    -- Valor lido da memória quando Wr = 0
         Dataout : OUT STD_LOGIC_VECTOR(31 DOWNTO 0)     -- Valor a ser escrito quando Wr = 1
    );
-END Memoria;
+END Memory;
 
 -- Arquitetura que define o comportamento da memória
 -- Simulation
-ARCHITECTURE behavioral_arch OF Memoria IS
+ARCHITECTURE behavioral_arch OF Memory IS
     signal add          : bit_vector(7 downto 0);
     signal addS0        : STD_LOGIC_VECTOR (ADDR_WIDTH-1 DOWNTO 0);
     signal addS1        : STD_LOGIC_VECTOR (ADDR_WIDTH-1 DOWNTO 0);
