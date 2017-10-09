@@ -66,9 +66,8 @@ end Ula32;
 
 -- Simulation
 architecture behavioral of Ula32 is
-
     signal s_temp       : std_logic_vector (31 downto 0);   -- Sinal que recebe valor temporário da operação realizada
-     signal soma_temp   : std_logic_vector (31 downto 0);   -- Sinal que recebe o valor temporario da soma, subtração ou incremento
+    signal soma_temp    : std_logic_vector (31 downto 0);   -- Sinal que recebe o valor temporario da soma, subtração ou incremento
     signal carry_temp   : std_logic_vector (31 downto 0);   -- Vetor para auxílio no cálculo das operações e do overflow aritmético
     signal novo_B       : std_logic_vector (31 downto 0);   -- Vetor que fornece o operando B, 1 ou not(B) para operações de soma, incremento ou subtração respectivamente
     signal i_temp       : std_logic_vector (31 downto 0);   -- Vetor para calculo de incremento
@@ -76,17 +75,15 @@ architecture behavioral of Ula32 is
     signal overflow_temp: std_logic;                        -- Bit que armazena valor temporário do overflow
 
     begin
-
         with Seletor select
-
             s_temp <=   A           when "000", -- LOAD
-                          soma_temp     when "001", -- SOMA
-                          soma_temp   when "010",   -- SUB
-                          (A and B)     when "011", -- AND
-                          (A xor B)     when "110", -- A XOR B
-                          not(A)        when "101", -- NOT A
-                          soma_temp     when "100", -- INCREMENTO
-                         "00000000000000000000000000000000" when others;    -- NAO DEFINIDO
+                        soma_temp   when "001", -- SOMA
+                        soma_temp   when "010", -- SUB
+                        (A and B)   when "011", -- AND
+                        (A xor B)   when "110", -- A XOR B
+                        not(A)      when "101", -- NOT A
+                        soma_temp   when "100", -- INCREMENTO
+                        "00000000000000000000000000000000" when others;     -- NAO DEFINIDO
 
             S <= s_temp;
 
@@ -100,9 +97,8 @@ architecture behavioral of Ula32 is
 --      Regiao que calcula a soma, subtracao e incremento                     --
 --------------------------------------------------------------------------------
         with Seletor select
-
             novo_B <= B         when "001",  -- Soma
-                         i_temp     when "100",  -- Incremento
+                      i_temp    when "100",  -- Incremento
                       not(B)    when others; -- Subtracao e outros
 
             soma_temp(0) <= A(0) xor novo_B(0) xor seletor(1);
@@ -137,7 +133,6 @@ architecture behavioral of Ula32 is
             soma_temp(29) <= A(29) xor novo_B(29) xor carry_temp(28);
             soma_temp(30) <= A(30) xor novo_B(30) xor carry_temp(29);
             soma_temp(31) <= A(31) xor novo_B(31) xor carry_temp(30);
-
 
             carry_temp(0) <=    (seletor(1) and (A(0) or novo_B(0))) or (A(0) and novo_B(0));
             carry_temp(1) <= (carry_temp(0) and (A(1) or novo_B(1))) or (A(1) and novo_B(1));
@@ -174,7 +169,7 @@ architecture behavioral of Ula32 is
 
             overflow_temp <= carry_temp(31) xor carry_temp(30);
 
-           Overflow <= overflow_temp;
+            Overflow <= overflow_temp;
 
 --------------------------------------------------------------------------------
 --      Regiao que calcula a comparação                                       --
@@ -186,7 +181,7 @@ architecture behavioral of Ula32 is
         igual_temp <= not(overflow_temp)  when soma_temp = "00000000000000000000000000000000"
                     else '0'; -- Quando subtracao e zero
 
-          Igual <= igual_temp;
+        Igual <= igual_temp;
 
 -- Se nao teve overflow -> resultado baseado no bit mais significativo de A - B.
 -- Se teve overflow -> A e B possuem, necessariamente, sinais contrarios. Resultado
