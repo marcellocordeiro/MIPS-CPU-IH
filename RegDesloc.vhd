@@ -69,7 +69,7 @@ USE IEEE.STD_LOGIC_UNSIGNED.ALL;
 ENTITY RegDesloc IS
         PORT(
             Clk     : IN    STD_LOGIC;  -- Clock do sistema
-             Reset  : IN    STD_LOGIC;  -- Reset
+            Reset   : IN    STD_LOGIC;  -- Reset
             Shift   : IN    STD_LOGIC_vector (2 downto 0);  -- Função a ser realizada pelo registrador
             N       : IN    STD_LOGIC_vector (4 downto 0);  -- Quantidade de deslocamentos
             Entrada : IN    STD_LOGIC_vector (31 downto 0); -- Vetor a ser deslocado

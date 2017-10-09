@@ -58,6 +58,9 @@ Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, A
 ula32 ALU (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero_flag));
 Registrador AluOut_reg (clock, reset, AluOutWrite, Alu, AluOut);
 
+// Registrador de deslocamento
+//RegDesloc ShiftRegister (clock, reset, ShiftOp, I15_0[10:6], Bout, ShiftToMux) // trocar I15_0 por uma saída de mux
+
 PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
 Mux32_3 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
 
