@@ -56,7 +56,7 @@ Registrador B_reg (clock, reset, BWrite, Bin, Bout); // ligado ao regbank
 Mux32_2 ALU_A_Mux (PC, Aout, AluSrcA, ALU_A);
 Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
 ula32 ALU (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero_flag));
-Registrador AluOut_reg (clock, reset, AluOutWrite, Alu, AluOut); 
+Registrador AluOut_reg (clock, reset, AluOutWrite, Alu, AluOut);
 
 PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
 Mux32_3 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));

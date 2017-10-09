@@ -66,7 +66,7 @@ always_comb
             AluSrcB = 1;
 
             ALUOp = ADD;
-            
+
             nextState = Fetch_E2;
         end
 
@@ -140,7 +140,7 @@ always_comb
                 default:
                     nextState = Fetch_PC;
 
-                    
+
             endcase
         end
 
@@ -374,7 +374,7 @@ always_comb
 
             nextState = Fetch_PC;
         end
-        
+
         MemRead: begin // corrigir/melhorar
             PCWrite = 0;
             IorD = 1'b1;
@@ -396,7 +396,7 @@ always_comb
 
             nextState = MemRead_E1;
         end
-        
+
         MemRead_E1: begin
             PCWrite = 0;
             IorD = 1'b1;
@@ -418,7 +418,7 @@ always_comb
 
             nextState = MemRead_E2;
         end
-        
+
         MemRead_E2: begin
             PCWrite = 0;
             IorD = 1'b1;
@@ -440,7 +440,7 @@ always_comb
 
             nextState = MemRead_E3;
         end
-        
+
         MemRead_E3: begin
             PCWrite = 0;
             IorD = 1'b1;
@@ -462,7 +462,7 @@ always_comb
 
             nextState = Fetch_PC;
         end
-        
+
         MemWrite: begin
             PCWrite = 0;
             IorD = 1'b1;
@@ -584,10 +584,10 @@ always_comb
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 0;
-            MDRWrite = 0;           
-            
+            MDRWrite = 0;
+
             AluSrcB = 2'b00;
-            
+
             ALUOp = SUB;
 
             if (opcode == 6'h4) begin // beq
