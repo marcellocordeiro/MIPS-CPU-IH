@@ -9,7 +9,7 @@ module Unidade_de_Controle (input logic clock, reset,
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Arit_Read, Arit_Store, Break, JumpRegister, // Tipo R
-                  BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  //Tipo I
+                  Beq, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  //Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump} state, nextState; //Tipo J
 
@@ -134,7 +134,7 @@ always_comb
                 6'h0f:
                     nextState = Lui;
                 6'h4, 6'h5:
-                    nextState = BeqCompare;
+                    nextState = Beq;
                 6'h8, 6'h9, 6'hc, 6'ha, 6'he: // arit com immediate
                     nextState = AritImmRead;
                 default:
@@ -543,36 +543,15 @@ always_comb
             AluOutWrite = 0;
             MDRWrite = 1'bx;
 
-            PCSource = 0; // soma
+            PCSource = 0;
             AluSrcB = 2'b00;
 
-            ALUOp = ADD;
+            ALUOp = LOAD;
 
             nextState = Fetch_PC;
         end
 
-        /*BeqAddress: begin
-            PCWrite = 0;
-            IorD = 0;
-            MemReadWrite = 0;
-            MemtoReg = 2;
-            IRWrite = 0;
-            AluSrcA = 0;
-            RegWrite = 0;
-            RegDst = 0;
-            AWrite = 1;
-            BWrite = 1;
-            AluOutWrite = 1;
-            MDRWrite = 0;
-
-            PCSource = 0;
-            AluSrcB = 3;
-
-            ALUOp = ADD;
-            nextState = BeqCompare;
-        end*/
-
-        BeqCompare: begin
+        Beq: begin
 
             IorD = 0;
             MemReadWrite = 0;

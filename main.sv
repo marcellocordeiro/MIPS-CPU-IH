@@ -10,24 +10,18 @@ enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 logic [2:0] ALUOpOut;
 assign ALUOpOut = ALUOp;
 
-//logic [31:0] MemData;
 logic [31:0] jmp_adr/*, Ain, Bin*/;
-//logic [31:0] AluOut, WriteDataReg, MDR;
 //logic [5:0] I31_26;
 //logic [4:0] I25_21, I20_16;
 //logic [15:0] I15_0;
-//logic [4:0] WriteRegister;
-
-//Entradas
-//logic [31:0] WriteDataMem;
 
 //Saidas --> Entradas
 logic [31:0] extended_number, shifted_extended_number;
-//logic [31:0] Aout, Bout, Alu;
+//logic [31:0] Aout, Bout;
 logic [31:0] ALU_A, ALU_B;
 
 //Unidade de Controle
-logic PCWrite/*, wr*/, IorD, AluSrcA/*, IRWrite*/, RegDst, AWrite, BWrite, AluOutWrite/*, RegWrite*/, MDRWrite, Zero_flag;
+logic PCWrite, IorD, AluSrcA, RegDst, AWrite, BWrite, AluOutWrite, MDRWrite, Zero_flag;
 logic [2:0] AluSrcB;
 logic [1:0] PCSource, MemtoReg;
 
@@ -37,7 +31,7 @@ Unidade_de_Controle UC (.clock(clock), .reset(reset),
                         .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
                         .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero_flag(Zero_flag));
 
-Registrador PC_reg (clock, reset, PCWrite, PCin, PC);
+Registrador PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
 assign WriteDataMem = Bout;
 Mux32_2 MemMux (PC, AluOut, IorD, Address);
@@ -51,12 +45,12 @@ Mux5_2 write_register_regbank_mux (I20_16, I15_0 [15:11], RegDst, WriteRegister)
 Banco_reg regbank (clock, reset, RegWrite, I25_21, I20_16, WriteRegister, WriteDataReg, Ain, Bin);
 
 //ALU
-Registrador A_reg (clock, reset, AWrite, Ain, Aout); // ligado ao regbank
-Registrador B_reg (clock, reset, BWrite, Bin, Bout); // ligado ao regbank
+Registrador A_reg (.Clk(clock), .Reset(reset), .Load(AWrite), .Entrada(Ain), .Saida(Aout)); // ligado ao regbank
+Registrador B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Saida(Bout)); // ligado ao regbank
 Mux32_2 ALU_A_Mux (PC, Aout, AluSrcA, ALU_A);
 Mux32_4 ALU_B_Mux (Bout, 4, extended_number, shifted_extended_number, AluSrcB, ALU_B); //Se der ruim observar numeros direto na entrada
 ula32 ALU (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero_flag));
-Registrador AluOut_reg (clock, reset, AluOutWrite, Alu, AluOut);
+Registrador AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
 
 // Registrador de deslocamento
 //RegDesloc ShiftRegister (clock, reset, ShiftOp, I15_0[10:6], Bout, ShiftToMux) // trocar I15_0 por uma saída de mux
