@@ -6198,15 +6198,13 @@ TRANSITION_LIST("Estado[1]")
 		REPEAT = 1;
 		LEVEL 0 FOR 5.0;
 		LEVEL 1 FOR 4.0;
-		LEVEL 0 FOR 2.0;
-		LEVEL 1 FOR 2.0;
+		LEVEL 0 FOR 8.0;
 		NODE
 		{
 			REPEAT = 18;
-			LEVEL 0 FOR 4.0;
 			LEVEL 1 FOR 6.0;
+			LEVEL 0 FOR 4.0;
 		}
-		LEVEL 0 FOR 4.0;
 		LEVEL 1 FOR 803.0;
 	}
 }
@@ -6217,23 +6215,23 @@ TRANSITION_LIST("Estado[0]")
 	{
 		REPEAT = 1;
 		LEVEL 0 FOR 3.0;
-		LEVEL 1 FOR 2.0;
-		LEVEL 0 FOR 2.0;
-		LEVEL 1 FOR 4.0;
+		NODE
+		{
+			REPEAT = 4;
+			LEVEL 1 FOR 2.0;
+			LEVEL 0 FOR 2.0;
+		}
 		NODE
 		{
 			REPEAT = 2;
+			LEVEL 1 FOR 2.0;
 			LEVEL 0 FOR 4.0;
 			LEVEL 1 FOR 2.0;
 			LEVEL 0 FOR 2.0;
-			LEVEL 1 FOR 2.0;
 		}
 		NODE
 		{
 			REPEAT = 4;
-			LEVEL 0 FOR 4.0;
-			LEVEL 1 FOR 2.0;
-			LEVEL 0 FOR 2.0;
 			LEVEL 1 FOR 4.0;
 			NODE
 			{
@@ -6245,10 +6243,10 @@ TRANSITION_LIST("Estado[0]")
 			LEVEL 1 FOR 2.0;
 			LEVEL 0 FOR 2.0;
 			LEVEL 1 FOR 2.0;
+			LEVEL 0 FOR 4.0;
+			LEVEL 1 FOR 2.0;
+			LEVEL 0 FOR 2.0;
 		}
-		LEVEL 0 FOR 4.0;
-		LEVEL 1 FOR 2.0;
-		LEVEL 0 FOR 2.0;
 		LEVEL 1 FOR 4.0;
 		NODE
 		{

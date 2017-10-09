@@ -55,14 +55,12 @@ set_global_assignment -name ADD_DEFAULT_PINS_TO_SIMULATION_OUTPUT_WAVEFORMS ON
 set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE Simulation.vwf
 set_global_assignment -name VECTOR_WAVEFORM_FILE Simulation.vwf
 set_global_assignment -name SYSTEMVERILOG_FILE Main.sv
-set_global_assignment -name SYSTEMVERILOG_FILE Unidade_de_Controle.sv
-set_global_assignment -name SYSTEMVERILOG_FILE Mux32_4.sv
-set_global_assignment -name SYSTEMVERILOG_FILE Mux5_2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ControlUnit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE PCShift.sv
-set_global_assignment -name SYSTEMVERILOG_FILE Mux32_3.sv
 set_global_assignment -name SYSTEMVERILOG_FILE sign_extend.sv
 set_global_assignment -name SYSTEMVERILOG_FILE Shift_left2.sv
-set_global_assignment -name SYSTEMVERILOG_FILE Mux32_2.sv
+set_global_assignment -name SYSTEMVERILOG_FILE Mux5bits_7.sv
+set_global_assignment -name SYSTEMVERILOG_FILE Mux32bits_15.sv
 set_global_assignment -name VHDL_FILE Registrador.vhd
 set_global_assignment -name VHDL_FILE Banco_reg.vhd
 set_global_assignment -name VHDL_FILE Memoria.vhd
