@@ -1,47 +1,47 @@
 --------------------------------------------------------------------------------
--- Title		: Unidade de Lógica e Aritmética
--- Project		: CPU multi-ciclo
+-- Title        : Unidade de Lógica e Aritmética
+-- Project      : CPU multi-ciclo
 --------------------------------------------------------------------------------
--- File			: ula32.vhd
--- Author		: Emannuel Gomes Macêdo (egm@cin.ufpe.br)
---				  Fernando Raposo Camara da Silva (frcs@cin.ufpe.br)
---				  Pedro Machado Manhães de Castro (pmmc@cin.ufpe.br)
---				  Rodrigo Alves Costa (rac2@cin.ufpe.br)
+-- File         : ula32.vhd
+-- Author       : Emannuel Gomes Macêdo (egm@cin.ufpe.br)
+--                Fernando Raposo Camara da Silva (frcs@cin.ufpe.br)
+--                Pedro Machado Manhães de Castro (pmmc@cin.ufpe.br)
+--                Rodrigo Alves Costa (rac2@cin.ufpe.br)
 -- Organization : Universidade Federal de Pernambuco
--- Created		: 29/07/2002
--- Last update	: 21/11/2002
--- Plataform	: Flex10K
--- Simulators	: Altera Max+plus II
--- Synthesizers	:
--- Targets		:
--- Dependency	:
+-- Created      : 29/07/2002
+-- Last update  : 21/11/2002
+-- Plataform    : Flex10K
+-- Simulators   : Altera Max+plus II
+-- Synthesizers :
+-- Targets      :
+-- Dependency   :
 --------------------------------------------------------------------------------
--- Description	: Entidade que processa as operações lógicas e aritméticas da
+-- Description  : Entidade que processa as operações lógicas e aritméticas da
 -- cpu.
 --------------------------------------------------------------------------------
 -- Copyright (c) notice
---		Universidade Federal de Pernambuco (UFPE).
---		CIn - Centro de Informatica.
---		Developed by computer science undergraduate students.
---		This code may be used for educational and non-educational purposes as
---		long as its copyright notice remains unchanged.
+--      Universidade Federal de Pernambuco (UFPE).
+--      CIn - Centro de Informatica.
+--      Developed by computer science undergraduate students.
+--      This code may be used for educational and non-educational purposes as
+--      long as its copyright notice remains unchanged.
 --------------------------------------------------------------------------------
--- Revisions		: 1
--- Revision Number	: 1
--- Version			: 1.1
--- Date				: 21/11/2002
--- Modifier			: Marcus Vinicius Lima e Machado (mvlm@cin.ufpe.br)
---				   	  Paulo Roberto Santana Oliveira Filho (prsof@cin.ufpe.br)
---					  Viviane Cristina Oliveira Aureliano (vcoa@cin.ufpe.br)
--- Description		:
+-- Revisions        : 1
+-- Revision Number  : 1
+-- Version          : 1.1
+-- Date             : 21/11/2002
+-- Modifier         : Marcus Vinicius Lima e Machado (mvlm@cin.ufpe.br)
+--                    Paulo Roberto Santana Oliveira Filho (prsof@cin.ufpe.br)
+--                    Viviane Cristina Oliveira Aureliano (vcoa@cin.ufpe.br)
+-- Description      :
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- Revisions		: 2
--- Revision Number	: 1.1
--- Version			: 1.2
--- Date				: 18/08/2008
--- Modifier			: João Paulo Fernandes Barbosa (jpfb@cin.ufpe.br)
--- Description		: Entradas, saídas e sinais internos passam a ser std_logic.
+-- Revisions        : 2
+-- Revision Number  : 1.1
+-- Version          : 1.2
+-- Date             : 18/08/2008
+-- Modifier         : João Paulo Fernandes Barbosa (jpfb@cin.ufpe.br)
+-- Description      : Entradas, saídas e sinais internos passam a ser std_logic.
 --------------------------------------------------------------------------------
 
 LIBRARY IEEE;
@@ -51,42 +51,42 @@ USE IEEE.STD_LOGIC_ARITH.ALL;
 -- Short name: ula
 entity Ula32 is
     port (
-        A 			: in  std_logic_vector (31 downto 0);	-- Operando A da ULA
-        B 			: in  std_logic_vector (31 downto 0);	-- Operando B da ULA
-        Seletor 	: in  std_logic_vector (2 downto 0);	-- Seletor da operação da ULA
-        S 			: out std_logic_vector (31 downto 0);	-- Resultado da operação (SOMA, SUB, AND, NOT, INCREMENTO, XOR)
-        Overflow 	: out std_logic;						-- Sinaliza overflow aritmético
-        Negativo	: out std_logic;						-- Sinaliza valor negativo
-        z 			: out std_logic;						-- Sinaliza quando S for zero
-        Igual		: out std_logic;						-- Sinaliza se A=B
-        Maior		: out std_logic;						-- Sinaliza se A>B
-        Menor		: out std_logic 						-- Sinaliza se A<B
+        A           : in  std_logic_vector (31 downto 0);   -- Operando A da ULA
+        B           : in  std_logic_vector (31 downto 0);   -- Operando B da ULA
+        Seletor     : in  std_logic_vector (2 downto 0);    -- Seletor da operação da ULA
+        S           : out std_logic_vector (31 downto 0);   -- Resultado da operação (SOMA, SUB, AND, NOT, INCREMENTO, XOR)
+        Overflow    : out std_logic;                        -- Sinaliza overflow aritmético
+        Negativo    : out std_logic;                        -- Sinaliza valor negativo
+        z           : out std_logic;                        -- Sinaliza quando S for zero
+        Igual       : out std_logic;                        -- Sinaliza se A=B
+        Maior       : out std_logic;                        -- Sinaliza se A>B
+        Menor       : out std_logic                         -- Sinaliza se A<B
     );
 end Ula32;
 
 -- Simulation
 architecture behavioral of Ula32 is
 
-    signal s_temp		: std_logic_vector (31 downto 0);	-- Sinal que recebe valor temporário da operação realizada
-     signal soma_temp 	: std_logic_vector (31 downto 0);   -- Sinal que recebe o valor temporario da soma, subtração ou incremento
-    signal carry_temp	: std_logic_vector (31 downto 0);   -- Vetor para auxílio no cálculo das operações e do overflow aritmético
-    signal novo_B 		: std_logic_vector (31 downto 0);   -- Vetor que fornece o operando B, 1 ou not(B) para operações de soma, incremento ou subtração respectivamente
-    signal i_temp		: std_logic_vector (31 downto 0);   -- Vetor para calculo de incremento
-    signal igual_temp	: std_logic;						-- Bit que armazena instancia temporária de igualdade
-    signal overflow_temp: std_logic;						-- Bit que armazena valor temporário do overflow
+    signal s_temp       : std_logic_vector (31 downto 0);   -- Sinal que recebe valor temporário da operação realizada
+     signal soma_temp   : std_logic_vector (31 downto 0);   -- Sinal que recebe o valor temporario da soma, subtração ou incremento
+    signal carry_temp   : std_logic_vector (31 downto 0);   -- Vetor para auxílio no cálculo das operações e do overflow aritmético
+    signal novo_B       : std_logic_vector (31 downto 0);   -- Vetor que fornece o operando B, 1 ou not(B) para operações de soma, incremento ou subtração respectivamente
+    signal i_temp       : std_logic_vector (31 downto 0);   -- Vetor para calculo de incremento
+    signal igual_temp   : std_logic;                        -- Bit que armazena instancia temporária de igualdade
+    signal overflow_temp: std_logic;                        -- Bit que armazena valor temporário do overflow
 
     begin
 
         with Seletor select
 
-            s_temp <= 	A  			when "000", -- LOAD
-                          soma_temp  	when "001",	-- SOMA
-                          soma_temp   when "010",	-- SUB
-                          (A and B)  	when "011",	-- AND
-                          (A xor B) 	when "110", -- A XOR B
-                          not(A)     	when "101",	-- NOT A
-                          soma_temp  	when "100",	-- INCREMENTO
-                         "00000000000000000000000000000000" when others;  	-- NAO DEFINIDO
+            s_temp <=   A           when "000", -- LOAD
+                          soma_temp     when "001", -- SOMA
+                          soma_temp   when "010",   -- SUB
+                          (A and B)     when "011", -- AND
+                          (A xor B)     when "110", -- A XOR B
+                          not(A)        when "101", -- NOT A
+                          soma_temp     when "100", -- INCREMENTO
+                         "00000000000000000000000000000000" when others;    -- NAO DEFINIDO
 
             S <= s_temp;
 
@@ -97,13 +97,13 @@ architecture behavioral of Ula32 is
             z <= '1' when s_temp = "00000000000000000000000000000000" else '0';
 
 --------------------------------------------------------------------------------
---		Regiao que calcula a soma, subtracao e incremento					  --
+--      Regiao que calcula a soma, subtracao e incremento                     --
 --------------------------------------------------------------------------------
         with Seletor select
 
-            novo_B <= B  		when "001",  -- Soma
-                         i_temp 	when "100",  -- Incremento
-                      not(B) 	when others; -- Subtracao e outros
+            novo_B <= B         when "001",  -- Soma
+                         i_temp     when "100",  -- Incremento
+                      not(B)    when others; -- Subtracao e outros
 
             soma_temp(0) <= A(0) xor novo_B(0) xor seletor(1);
             soma_temp(1) <= A(1) xor novo_B(1) xor carry_temp(0);
@@ -177,7 +177,7 @@ architecture behavioral of Ula32 is
            Overflow <= overflow_temp;
 
 --------------------------------------------------------------------------------
---		Regiao que calcula a comparação										  --
+--      Regiao que calcula a comparação                                       --
 --------------------------------------------------------------------------------
 
 -- No codigo da comparacao (110) sera executada a subtracao na parte relativa

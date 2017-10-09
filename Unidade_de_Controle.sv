@@ -7,9 +7,9 @@ module Unidade_de_Controle (input logic clock, reset,
                             output logic [5:0] State_out,
                             output logic [2:0] ALUOpOut);
 
-enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode,	// Fetch e Decode
+enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Arit_Read, Arit_Store, Break, JumpRegister, // Tipo R
-                  BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,	//Tipo I
+                  BeqAddress, BeqCompare, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  //Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump} state, nextState; //Tipo J
 
