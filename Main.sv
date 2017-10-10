@@ -1,7 +1,7 @@
 module Main (input logic clock, reset,
              output logic RegWrite, wr, IRWrite,
              output logic [5:0] Estado,
-             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin,
+             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin, EPC, Cause,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0);
@@ -14,19 +14,20 @@ logic [31:0] jmp_adr;
 
 // Saidas --> Entradas
 logic [31:0] extended_number, shifted_extended_number;
-logic [31:0] ALU_A, ALU_B;
+logic [31:0] ALU_A, ALU_B, CauseIn;
 logic Zero, Equal, Greater, Less, Overflow; // ALU
 
 // Unidade de Controle
-logic PCWrite, AWrite, BWrite, AluOutWrite, MDRWrite;
+logic PCWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite;
 logic [2:0] RegDst;
-logic [3:0] IorD, PCSource, MemtoReg, AluSrcA, AluSrcB;
+logic [3:0] IorD, PCSource, MemtoReg, AluSrcA, AluSrcB, IntCause;
 
 ControlUnit ControlUnit (.clock(clock), .reset(reset),
                          .opcode(I31_26), .funct(I15_0[5:0]),
                          .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
                          .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
-                         .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero));
+                         .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero),
+                         .EPCWrite(EPCWrite), .IntCause(IntCause), .CauseWrite(CauseWrite));
 
 Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
@@ -56,9 +57,14 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 //ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(I15_0[10:6]), .Entrada(Bout), .Saida(ShiftToMux)) // trocar I15_0 por uma saÃ­da de mux
 
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
-Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
+Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .in3(EPC), .sel(PCSource), .out(PCin));
 
 sign_extend SignExtend(.in(I15_0), .out(extended_number));
 Shift_left2 SL2(.in(extended_number), .out(shifted_extended_number));
+
+Register32 EPC_reg (.Clk(clock), .Reset(reset), .Load(EPCWrite), .Entrada(Alu), .Saida(EPC));
+
+Mux32_16 Cause_mux (.in0(0), .in1(1), .sel(IntCause), .out(CauseIn)); // entradas: 0 e 1 ou endereço de tratamento (254 e 255)?
+Register32 Cause_reg (.Clk(clock), .Reset(reset), .Load(CauseWrite), .Entrada(CauseIn), .Saida(Cause));
 
 endmodule: Main
