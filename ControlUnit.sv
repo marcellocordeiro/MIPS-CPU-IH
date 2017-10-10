@@ -7,7 +7,7 @@ module ControlUnit (input logic clock, reset,
                     output logic [2:0] RegDst, ALUOpOut);
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
-                  Arit_Read, Arit_Store, Break, JumpRegister, // Tipo R
+                  Arit_Calc, Arit_Store, Break, JumpRegister, // Tipo R
                   Beq, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  // Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump, // Tipo J
@@ -84,8 +84,8 @@ always_comb
             MemReadWrite = 0;
             IRWrite = 1;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
             CauseWrite = 0;
@@ -132,7 +132,7 @@ always_comb
                 6'h0: begin
                     case (funct)
                         6'h20, 6'h22, 6'h26, 6'h24:
-                            nextState = Arit_Read;
+                            nextState = Arit_Calc;
                         6'hd, 6'h0:
                             nextState = Break;
                         6'h8: // jr
@@ -163,13 +163,13 @@ always_comb
             endcase
         end
 
-        Arit_Read: begin
+        Arit_Calc: begin
             PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
             CauseWrite = 0;
@@ -220,8 +220,10 @@ always_comb
 
             AluSrcA = 1;
             AluSrcB = 0;
+            
+            ALUOp = LOAD; // operação acontece em Arit_Read (o resultado já está em ALUOut)
 
-            case (funct)
+            /*case (funct)
                 6'h20:
                     ALUOp = ADD;
                 6'h22:
@@ -232,7 +234,7 @@ always_comb
                     ALUOp = XOR;
                 default:
                     ALUOp = LOAD;
-            endcase
+            endcase*/
 
             nextState = Fetch_PC;
         end
@@ -271,8 +273,8 @@ always_comb
             MemReadWrite = 1'bx;
             IRWrite = 0;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
             CauseWrite = 0;
@@ -297,8 +299,8 @@ always_comb
             MemReadWrite = 1'bx;
             IRWrite = 0;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
             CauseWrite = 0;
@@ -323,8 +325,8 @@ always_comb
             MemReadWrite = 1'bx;
             IRWrite = 0;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
             CauseWrite = 0;
@@ -356,8 +358,8 @@ always_comb
             AluSrcA = 1;
             RegWrite = 0;
             RegDst = 3'bxxx;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
             CauseWrite = 0;
@@ -599,8 +601,8 @@ always_comb
             MemReadWrite = 1'bx;
             IRWrite = 0;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
             CauseWrite = 0;
@@ -624,8 +626,8 @@ always_comb
             MemReadWrite = 0;
             IRWrite = 0;
             RegWrite = 0;
-            AWrite = 1;
-            BWrite = 1;
+            AWrite = 0;
+            BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
             CauseWrite = 0;
