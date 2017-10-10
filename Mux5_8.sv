@@ -1,6 +1,6 @@
-module Mux5bits_8 (input logic [4:0] in0, in1, in2, in3, in4, in5, in6, in7,
-                   input logic [2:0] sel,
-                   output logic [4:0] out);
+module Mux5_8 (input logic [4:0] in0, in1, in2, in3, in4, in5, in6, in7,
+               input logic [2:0] sel,
+               output logic [4:0] out);
 
 always_comb
     case (sel)
@@ -14,4 +14,4 @@ always_comb
         7:  out = in7;
     endcase
 
-endmodule: Mux5bits_8
+endmodule: Mux5_8

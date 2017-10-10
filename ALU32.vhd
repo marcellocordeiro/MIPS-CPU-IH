@@ -2,7 +2,7 @@
 -- Title        : Unidade de Lógica e Aritmética
 -- Project      : CPU multi-ciclo
 --------------------------------------------------------------------------------
--- File         : ALU32bits.vhd
+-- File         : ALU32.vhd
 -- Author       : Emannuel Gomes Macêdo (egm@cin.ufpe.br)
 --                Fernando Raposo Camara da Silva (frcs@cin.ufpe.br)
 --                Pedro Machado Manhães de Castro (pmmc@cin.ufpe.br)
@@ -49,7 +49,7 @@ USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.STD_LOGIC_ARITH.ALL;
 
 -- Short name: ula
-entity ALU32bits is
+entity ALU32 is
     port (
         A           : in  std_logic_vector (31 downto 0);   -- Operando A da ULA
         B           : in  std_logic_vector (31 downto 0);   -- Operando B da ULA
@@ -62,10 +62,10 @@ entity ALU32bits is
         Maior       : out std_logic;                        -- Sinaliza se A>B
         Menor       : out std_logic                         -- Sinaliza se A<B
     );
-end ALU32bits;
+end ALU32;
 
 -- Simulation
-architecture behavioral of ALU32bits is
+architecture behavioral of ALU32 is
     signal s_temp       : std_logic_vector (31 downto 0);   -- Sinal que recebe valor temporário da operação realizada
     signal soma_temp    : std_logic_vector (31 downto 0);   -- Sinal que recebe o valor temporario da soma, subtração ou incremento
     signal carry_temp   : std_logic_vector (31 downto 0);   -- Vetor para auxílio no cálculo das operações e do overflow aritmético

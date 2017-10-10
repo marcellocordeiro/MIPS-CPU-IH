@@ -15,46 +15,48 @@ logic [31:0] jmp_adr;
 // Saidas --> Entradas
 logic [31:0] extended_number, shifted_extended_number;
 logic [31:0] ALU_A, ALU_B;
+logic Zero, Equal, Greater, Less, Overflow; // ALU
 
 // Unidade de Controle
-logic PCWrite, IorD, AluSrcA, RegDst, AWrite, BWrite, AluOutWrite, MDRWrite, Zero_flag;
-logic [2:0] AluSrcB;
-logic [3:0] PCSource;
-logic [2:0] MemtoReg;
+logic PCWrite, AWrite, BWrite, AluOutWrite, MDRWrite;
+logic [2:0] RegDst;
+logic [3:0] IorD, PCSource, MemtoReg, AluSrcA, AluSrcB;
 
 ControlUnit ControlUnit (.clock(clock), .reset(reset),
                          .opcode(I31_26), .funct(I15_0[5:0]),
                          .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
                          .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
-                         .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero_flag(Zero_flag));
+                         .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero));
 
-Reg PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
+Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
 assign WriteDataMem = Bout;
-Mux32bits_16 MemMux (.in0(PC), .in1(AluOut), .sel(IorD), .out(Address));
+Mux32_16 MemMux (.in0(PC), .in1(AluOut), .sel(IorD), .out(Address));
 Memory Memory (Address, clock, wr, WriteDataMem, MemData);
 
 InstructionRegister InstructionRegister (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
-Reg MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
+Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32bits_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .sel(MemtoReg), .out(WriteDataReg));
-Mux5bits_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .sel(RegDst), .out(WriteRegister));
+Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .sel(MemtoReg), .out(WriteDataReg));
+Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (clock, reset, RegWrite, I25_21, I20_16, WriteRegister, WriteDataReg, Ain, Bin);
 
-//ALU
-Reg A_reg (.Clk(clock), .Reset(reset), .Load(AWrite), .Entrada(Ain), .Saida(Aout)); // ligado ao regbank
-Reg B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Saida(Bout)); // ligado ao regbank
+// ALU
+Register32 A_reg (.Clk(clock), .Reset(reset), .Load(AWrite), .Entrada(Ain), .Saida(Aout)); // ligado ao regbank
+Register32 B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Saida(Bout)); // ligado ao regbank
 
-Mux32bits_16 ALU_A_Mux (.in0(PC), .in1(Aout), .sel(AluSrcA), .out(ALU_A));
-Mux32bits_16 ALU_B_Mux (.in0(Bout), .in1(4), .in2(extended_number), .in3(shifted_extended_number), .sel(AluSrcB), .out(ALU_B)); //Se der ruim observar numeros direto na entrada
-ALU32bits ALU32bits (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero_flag));
-Reg AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
+Mux32_16 ALU_A_Mux (.in0(PC), .in1(Aout), .sel(AluSrcA), .out(ALU_A));
+Mux32_16 ALU_B_Mux (.in0(Bout), .in1(4), .in2(extended_number), .in3(shifted_extended_number), .sel(AluSrcB), .out(ALU_B));
+
+
+ALU32 ALU32 (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero), .Igual(Equal), .Maior(Greater), .Menor(Less), .Overflow(Overflow));
+Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
 
 // Registrador de deslocamento
 //ShiftRegister ShiftRegister (clock, reset, ShiftOp, I15_0[10:6], Bout, ShiftToMux) // trocar I15_0 por uma saída de mux
 
-PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr); // Alerta de gambiarra dentro deste modulo
-Mux32bits_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
+PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr);
+Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
 
 sign_extend SignExtend(I15_0,extended_number);
 Shift_left2 SL2(extended_number,shifted_extended_number);

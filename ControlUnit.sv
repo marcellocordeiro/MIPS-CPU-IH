@@ -1,11 +1,10 @@
 module ControlUnit (input logic clock, reset,
-                            input logic [5:0] opcode, funct,
-                            input logic Zero_flag,
-                            output logic PCWrite, IorD, MemReadWrite, IRWrite, AluSrcA, RegWrite,
-                                         AWrite, BWrite, AluOutWrite, MDRWrite,
-                            output logic [4:0] PCSource, AluSrcB, MemtoReg,
-                            output logic [5:0] State_out,
-                            output logic [2:0] RegDst, ALUOpOut);
+                    input logic [5:0] opcode, funct,
+                    input logic Zero,
+                    output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite,
+                    output logic [3:0] IorD, PCSource, AluSrcA, AluSrcB, MemtoReg,
+                    output logic [5:0] State_out,
+                    output logic [2:0] RegDst, ALUOpOut);
 
 enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Arit_Read, Arit_Store, Break, JumpRegister, // Tipo R
@@ -148,19 +147,20 @@ always_comb
 
         Arit_Read: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 0;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
 
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             case (funct)
@@ -181,19 +181,20 @@ always_comb
 
         Arit_Store: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 0;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 1;
-            RegDst = 1;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
 
+            IorD = 0;
+            MemtoReg = 0;
+            RegDst = 1;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             case (funct)
@@ -213,24 +214,24 @@ always_comb
         end
 
         Break: begin
-            IorD = 0;
+            PCWrite = 0;
             MemReadWrite = 0;
-            MemtoReg = 0;
             IRWrite = 0;
-            AluSrcA = 0;
             RegWrite = 0;
-            RegDst = 0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
 
+            IorD = 0;
+            MemtoReg = 0;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 0;
             AluSrcB = 0;
 
             ALUOp = LOAD;
-
-            PCWrite = 0;
 
             if (funct == 6'h0) // nop
                 nextState = Fetch_PC;
@@ -240,19 +241,20 @@ always_comb
 
         MemComputation: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
 
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 2;
 
             ALUOp = ADD;
@@ -262,19 +264,20 @@ always_comb
 
         MemComputation_E1: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
 
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 2;
 
             ALUOp = ADD;
@@ -284,19 +287,20 @@ always_comb
 
         MemComputation_E2: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
 
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 2;
 
             ALUOp = ADD;
@@ -321,8 +325,8 @@ always_comb
             AluOutWrite = 1;
             MDRWrite = 1'bx;
 
-            PCSource = 2'b00;
-            AluSrcB = 2'b10;
+            PCSource = 0;
+            AluSrcB = 2;
 
             case (opcode)
                 6'h8: // addi // com check de overflow
@@ -344,54 +348,43 @@ always_comb
 
         AritImmStore: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 2'b00; // ?????
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 1;
-            RegDst = 0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
 
+            IorD = 0;
+            MemtoReg = 0;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             ALUOp = LOAD;
-
-            /*case (funct)
-                6'h20:
-                    ALUOp = ADD;
-                6'h22:
-                    ALUOp = SUB;
-                6'h24:
-                    ALUOp = AND;
-                6'h26:
-                    ALUOp = XOR;
-                default:
-                    ALUOp = LOAD;
-            endcase*/
 
             nextState = Fetch_PC;
         end
 
         MemRead: begin // corrigir/melhorar
             PCWrite = 0;
-            IorD = 1'b1;
-            MemReadWrite = 1'b0;
-            MemtoReg = 1;
+            MemReadWrite = 0;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
-            MDRWrite = 1'b1;
+            MDRWrite = 1;
 
+            IorD = 1;
+            MemtoReg = 1;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             ALUOp = ADD;
@@ -401,19 +394,20 @@ always_comb
 
         MemRead_E1: begin
             PCWrite = 0;
-            IorD = 1'b1;
-            MemReadWrite = 1'b0;
-            MemtoReg = 1;
+            MemReadWrite = 0;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
-            MDRWrite = 1'b1;
+            MDRWrite = 1;
 
+            IorD = 1;
+            MemtoReg = 1;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             ALUOp = ADD;
@@ -423,19 +417,20 @@ always_comb
 
         MemRead_E2: begin
             PCWrite = 0;
-            IorD = 1'b1;
-            MemReadWrite = 1'b0;
-            MemtoReg = 0;
+            MemReadWrite = 0;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
-            MDRWrite = 1'b1;
+            MDRWrite = 1;
 
+            IorD = 1;
+            MemtoReg = 0;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             ALUOp = ADD;
@@ -445,19 +440,20 @@ always_comb
 
         MemRead_E3: begin
             PCWrite = 0;
-            IorD = 1'b1;
-            MemReadWrite = 1'b0;
-            MemtoReg = 1;
+            MemReadWrite = 0;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 1;
-            RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
-            MDRWrite = 1'b1;
+            MDRWrite = 1;
 
+            IorD = 1;
+            MemtoReg = 1;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             ALUOp = ADD;
@@ -467,19 +463,20 @@ always_comb
 
         MemWrite: begin
             PCWrite = 0;
-            IorD = 1'b1;
-            MemReadWrite = 1'b1;
-            MemtoReg = 1;
+            MemReadWrite = 1;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 1'b0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
-            MDRWrite = 1'b1;
+            MDRWrite = 1;
 
+            IorD = 1;
+            MemtoReg = 1;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1;
             AluSrcB = 0;
 
             ALUOp = ADD;
@@ -489,19 +486,20 @@ always_comb
 
         Lui: begin
             PCWrite = 0;
-            IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 2;
             IRWrite = 0;
-            AluSrcA = 1'bx;
             RegWrite = 1;
-            RegDst = 0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
 
+            IorD = 1'bx;
+            MemtoReg = 2;
+            RegDst = 0;
             PCSource = 0;
+
+            AluSrcA = 1'bx;
             AluSrcB = 2'bxx;
 
             ALUOp = LOAD;
@@ -511,19 +509,20 @@ always_comb
 
         Jump: begin
             PCWrite = 1;
-            IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1'bx;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
 
+            IorD = 1'bx;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 2;
+
+            AluSrcA = 1'bx;
             AluSrcB = 2'bxx;
 
             ALUOp = LOAD;
@@ -533,20 +532,21 @@ always_comb
 
         JumpRegister: begin
             PCWrite = 1;
-            IorD = 1'bx;
             MemReadWrite = 1'bx;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
 
+            IorD = 1'bx;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0;
-            AluSrcB = 2'b00;
+
+            AluSrcA = 1;
+            AluSrcB = 0;
 
             ALUOp = LOAD;
 
@@ -554,25 +554,25 @@ always_comb
         end
 
         Beq: begin
-
-            IorD = 0;
             MemReadWrite = 0;
-            MemtoReg = 2;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 0;
             AWrite = 1;
             BWrite = 1;
             AluOutWrite = 0;
             MDRWrite = 0;
 
-            AluSrcB = 2'b00;
+            IorD = 0;
+            MemtoReg = 2;
+            RegDst = 0;
+
+            AluSrcA = 1;
+            AluSrcB = 0;
 
             ALUOp = SUB;
 
             if (opcode == 6'h4) begin // beq
-                if (Zero_flag == 1) begin
+                if (Zero == 1) begin
                     PCSource = 1;
                     PCWrite = 1;
                 end
@@ -582,7 +582,7 @@ always_comb
                 end
             end
             else begin // opcode == 6'5, bne
-                if (Zero_flag != 1) begin
+                if (Zero != 1) begin
                     PCSource = 1;
                     PCWrite = 1;
                 end
