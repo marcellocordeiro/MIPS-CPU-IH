@@ -1,8 +1,9 @@
 module ControlUnit (input logic clock, reset,
                     input logic [5:0] opcode, funct,
                     input logic Zero, Overflow,
-                    output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite,/* CauseWrite,*/ TreatSrc,
-                    output logic [3:0] IorD, PCSource, AluSrcA, AluSrcB, MemtoReg, /*IntCause,*/
+                    input logic [31:0] Cause,
+                    output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite, TreatSrc,
+                    output logic [3:0] IorD, PCSource, AluSrcA, AluSrcB, MemtoReg, IntCause,
                     output logic [5:0] State_out,
                     output logic [2:0] RegDst, ALUOpOut);
 
@@ -11,7 +12,7 @@ enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Beq, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  // Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump, // Tipo J
-                  Excp_Read, Excp_E1, Excp_E2, Excp0, Excp1} state, nextState; // Exceptions
+                  Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/} state, nextState; // Exceptions
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 
@@ -35,7 +36,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             //EPCWrite = 1;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -44,7 +45,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0; // ALU
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0; // PC
             AluSrcB = 1; // 4
@@ -63,7 +64,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 1; // salva PC+4 em EPC (tinha colocado para salvar PC, mas depois do tratamento da exceção, voltaria a executar a partir de EPC e entraria em um loop)
 			TreatSrc = 0;
 			
@@ -71,7 +72,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0; // ALU
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 0; // PC
             AluSrcB = 1; // 4
@@ -90,7 +91,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -98,7 +99,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0; // ALU
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0; // PC
             AluSrcB = 1; // 4
@@ -117,7 +118,7 @@ always_comb
             BWrite = 1;
             AluOutWrite = 1; // PC + branch address << 2
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -125,7 +126,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0; // ALU
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 0; // PC
             AluSrcB = 3; // branch address << 2
@@ -159,9 +160,8 @@ always_comb
                 6'h8, 6'h9, 6'hc, 6'ha, 6'he: // arit com immediate
                     nextState = AritImmRead;
                 default: begin
-                    //IntCause = 0;
-                    //CauseWrite = 1;
-                    //TreatSrc = 0;	(já tá)
+                    //IntCause = 0; (já tá)
+                    CauseWrite = 1;
                     
                     nextState = Excp_Read;
                 end
@@ -177,7 +177,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -185,7 +185,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -203,10 +203,7 @@ always_comb
                     ALUOp = LOAD;
             endcase
             
-            if (Overflow) // aqui mesmo? se parar aqui, o resultado não é armazenado no registrador
-                nextState = Excp_Read;
-			else
-				nextState = Arit_Store;
+            nextState = Arit_Store;
         end
 
         Arit_Store: begin
@@ -218,7 +215,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -226,14 +223,12 @@ always_comb
             MemtoReg = 0;
             RegDst = 1;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
-            
-            ALUOp = LOAD; // operação acontece em Arit_Read (o resultado já está em ALUOut)
 
-            /*case (funct)
+            case (funct)
                 6'h20:
                     ALUOp = ADD;
                 6'h22:
@@ -244,9 +239,16 @@ always_comb
                     ALUOp = XOR;
                 default:
                     ALUOp = LOAD;
-            endcase*/
+            endcase
 
-            nextState = Fetch_PC;
+            if (Overflow) begin
+				IntCause = 1;
+				CauseWrite = 1;
+            
+                nextState = Excp_Read;
+            end
+			else
+				nextState = Fetch_PC;
         end
 
         Break: begin
@@ -258,7 +260,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -266,7 +268,7 @@ always_comb
             MemtoReg = 0;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 0;
             AluSrcB = 0;
@@ -288,7 +290,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -296,7 +298,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 2;
@@ -315,7 +317,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -323,7 +325,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 2;
@@ -342,7 +344,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -350,7 +352,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 2;
@@ -363,7 +365,7 @@ always_comb
                 nextState = MemWrite;
         end
 
-        AritImmRead: begin
+        AritImmRead: begin	// fazer overflow
             PCWrite = 0;
             IorD = 0;
             MemReadWrite = 1'bx;
@@ -376,12 +378,12 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            ///CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcB = 2;
 
@@ -400,13 +402,10 @@ always_comb
                     ALUOp = LOAD;
             endcase
 			
-			if (Overflow) // aqui mesmo? se parar aqui, o resultado não é armazenado no registrador
-                nextState = Excp1;
-			else
-				nextState = AritImmStore;
+			nextState = AritImmStore;
         end
 
-        AritImmStore: begin
+        AritImmStore: begin // fazer overflow
             PCWrite = 0;
             MemReadWrite = 1'bx;
             IRWrite = 0;
@@ -415,7 +414,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -423,7 +422,7 @@ always_comb
             MemtoReg = 0;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -442,7 +441,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -450,7 +449,7 @@ always_comb
             MemtoReg = 1;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -469,7 +468,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -477,7 +476,7 @@ always_comb
             MemtoReg = 1;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -496,7 +495,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -504,7 +503,7 @@ always_comb
             MemtoReg = 0;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -523,7 +522,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -531,7 +530,7 @@ always_comb
             MemtoReg = 1;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -550,7 +549,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -558,7 +557,7 @@ always_comb
             MemtoReg = 1;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -577,7 +576,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -585,7 +584,7 @@ always_comb
             MemtoReg = 2;
             RegDst = 0;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1'bx;
             AluSrcB = 2'bxx;
@@ -604,7 +603,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -612,7 +611,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 2;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1'bx;
             AluSrcB = 2'bxx;
@@ -631,7 +630,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -639,7 +638,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -657,14 +656,14 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
             IorD = 0;
             MemtoReg = 2;
             RegDst = 0;
-            //IntCause = 0;
+            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -704,7 +703,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -712,7 +711,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0;
             AluSrcB = 0;
@@ -731,7 +730,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -739,7 +738,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0;
             AluSrcB = 0;
@@ -758,7 +757,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -766,17 +765,17 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0;
             AluSrcB = 0;
 
             ALUOp = LOAD;
 
-            nextState = Excp0;
+            nextState = Excp_Treat;
         end
         
-        Excp0: begin
+        Excp_Treat: begin
             PCWrite = 1;
             MemReadWrite = 0;
             IRWrite = 0;
@@ -785,15 +784,43 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
-            TreatSrc = 1;
+            //TreatSrc = (Cause)? 1:0; // gambiarra? Ou faz sentido? kkkk
+            TreatSrc = Cause[0];
+            
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
+            PCSource = 3;
+            IntCause = 0;
+            
+            AluSrcA = 0;
+            AluSrcB = 0;
+
+            ALUOp = LOAD;
+
+            nextState = Fetch_PC;
+        end
+        
+        /*Excp0: begin
+            PCWrite = 1;
+            MemReadWrite = 0;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+            CauseWrite = 0;
+            EPCWrite = 0;
+            TreatSrc = 0;
 
             IorD = 0;
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 3;
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0;
             AluSrcB = 0;
@@ -812,7 +839,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            //CauseWrite = 0;
+            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 1;
 
@@ -820,7 +847,7 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 3;
-            //IntCause = 0;
+            IntCause = 0;
             
             AluSrcA = 0;
             AluSrcB = 0;
@@ -828,7 +855,7 @@ always_comb
             ALUOp = LOAD;
 
             nextState = Fetch_PC;
-        end
+        end*/
     
     endcase
 
