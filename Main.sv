@@ -32,14 +32,14 @@ Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .
 
 assign WriteDataMem = Bout;
 Mux32_16 MemMux (.in0(PC), .in1(AluOut), .sel(IorD), .out(Address));
-Memory Memory (Address, clock, wr, WriteDataMem, MemData);
+Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMem), .Dataout(MemData));
 
-InstructionRegister InstructionRegister (clock, reset, IRWrite, MemData, I31_26, I25_21, I20_16, I15_0);
+InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IRWrite), .Entrada(MemData),.Instr31_26(I31_26), .Instr25_21(I25_21), .Instr20_16(I20_16), .Instr15_0(I15_0));
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
 Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .sel(MemtoReg), .out(WriteDataReg));
 Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .sel(RegDst), .out(WriteRegister));
-RegisterBank RegisterBank (clock, reset, RegWrite, I25_21, I20_16, WriteRegister, WriteDataReg, Ain, Bin);
+RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
 // ALU
 Register32 A_reg (.Clk(clock), .Reset(reset), .Load(AWrite), .Entrada(Ain), .Saida(Aout)); // ligado ao regbank
@@ -48,17 +48,16 @@ Register32 B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Sai
 Mux32_16 ALU_A_Mux (.in0(PC), .in1(Aout), .sel(AluSrcA), .out(ALU_A));
 Mux32_16 ALU_B_Mux (.in0(Bout), .in1(4), .in2(extended_number), .in3(shifted_extended_number), .sel(AluSrcB), .out(ALU_B));
 
-
 ALU32 ALU32 (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero), .Igual(Equal), .Maior(Greater), .Menor(Less), .Overflow(Overflow));
 Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
 
 // Registrador de deslocamento
-//ShiftRegister ShiftRegister (clock, reset, ShiftOp, I15_0[10:6], Bout, ShiftToMux) // trocar I15_0 por uma saída de mux
+//ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(I15_0[10:6]), .Entrada(Bout), .Saida(ShiftToMux)) // trocar I15_0 por uma saída de mux
 
-PCShift PC_shift ({I25_21, I20_16, I15_0}, PC[31:28], jmp_adr);
+PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
 Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
 
-sign_extend SignExtend(I15_0,extended_number);
-Shift_left2 SL2(extended_number,shifted_extended_number);
+sign_extend SignExtend(in.(I15_0), .out(extended_number));
+Shift_left2 SL2(.in(extended_number), .out(shifted_extended_number));
 
 endmodule: Main
