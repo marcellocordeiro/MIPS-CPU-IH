@@ -48,6 +48,7 @@ Register32 B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Sai
 Mux32_16 ALU_A_Mux (.in0(PC), .in1(Aout), .sel(AluSrcA), .out(ALU_A));
 Mux32_16 ALU_B_Mux (.in0(Bout), .in1(4), .in2(extended_number), .in3(shifted_extended_number), .sel(AluSrcB), .out(ALU_B));
 
+
 ALU32 ALU32 (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero), .Igual(Equal), .Maior(Greater), .Menor(Less), .Overflow(Overflow));
 Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
 
@@ -57,7 +58,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
 Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .sel(PCSource), .out(PCin));
 
-sign_extend SignExtend(in.(I15_0), .out(extended_number));
+sign_extend SignExtend(.in(I15_0), .out(extended_number));
 Shift_left2 SL2(.in(extended_number), .out(shifted_extended_number));
 
 endmodule: Main
