@@ -5,10 +5,10 @@ module Main (input logic clock, reset,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0);
-
+/*
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
+assign ALUOpOut = ALUOp;*/
 logic [2:0] ALUOpOut;
-assign ALUOpOut = ALUOp;
 
 logic [31:0] jmp_adr;
 
@@ -30,6 +30,7 @@ ControlUnit ControlUnit (.clock(clock), .reset(reset),
                          .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero), .Overflow(Overflow),
                          .EPCWrite(EPCWrite), .IntCause(IntCause), .CauseWrite(CauseWrite), .TreatSrc(TreatSrc), .Cause(Cause));
 
+                         /*.ShiftOp(ShiftOpOut), .NShiftSource(NShiftSource),*/
 Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
 assign WriteDataMem = Bout;
@@ -40,7 +41,7 @@ Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMem),
 InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IRWrite), .Entrada(MemData),.Instr31_26(I31_26), .Instr25_21(I25_21), .Instr20_16(I20_16), .Instr15_0(I15_0));
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .sel(MemtoReg), .out(WriteDataReg));
+Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftToMux), .sel(MemtoReg), .out(WriteDataReg));
 Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
@@ -51,12 +52,19 @@ Register32 B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Sai
 Mux32_16 ALU_A_Mux (.in0(PC), .in1(Aout), .sel(AluSrcA), .out(ALU_A));
 Mux32_16 ALU_B_Mux (.in0(Bout), .in1(4), .in2(extended_number), .in3(shifted_extended_number), .sel(AluSrcB), .out(ALU_B));
 
-
-ALU32 ALU32 (.A(ALU_A), .B(ALU_B), .Seletor(ALUOp), .S(Alu), .z(Zero), .Igual(Equal), .Maior(Greater), .Menor(Less), .Overflow(Overflow));
+ALU32 ALU32 (.A(ALU_A), .B(ALU_B), .Seletor(ALUOpOut), .S(Alu), .z(Zero), .Igual(Equal), .Maior(Greater), .Menor(Less), .Overflow(Overflow));
 Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
 
 // Registrador de deslocamento
-//ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(I15_0[10:6]), .Entrada(Bout), .Saida(ShiftToMux)) // trocar I15_0 por uma saída de mux
+logic [4:0] NShift;
+logic NShiftSource;
+
+enum logic [2:0] {NOP, SRLOAD, LEFT, RIGHT, ARITRIGHT, RIGHTROT, LEFTROT} ShiftOp;
+logic [2:0] ShiftOpOut;
+assign ShiftOpOut = ShiftOp;
+
+Mux5_8 N_Mux (.in0(I15_0[10:6]), .in1(I25_21), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
+ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(NShift), .Entrada(Bout), .Saida(ShiftToMux)); // trocar I15_0 por uma saída de mux
 
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
 Mux8_2 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
