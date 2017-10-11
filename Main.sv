@@ -39,8 +39,8 @@ Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMem),
 InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IRWrite), .Entrada(MemData),.Instr31_26(I31_26), .Instr25_21(I25_21), .Instr20_16(I20_16), .Instr15_0(I15_0));
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .sel(MemtoReg), .out(WriteDataReg));
-Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .sel(RegDst), .out(WriteRegister));
+Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .in4(PC), .sel(MemtoReg), .out(WriteDataReg));
+Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .in2(5'b11111), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
 // ALU

@@ -14,7 +14,7 @@ enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Arit_Calc, Arit_Store, Break, JumpRegister, // Tipo R
                   Beq, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  // Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
-                  Lui, Jump, // Tipo J
+                  Lui, Jump, JumpSavePC, // Tipo J
                   ShiftRead, ShiftWrite, // Shift (depois arrumo isso)
                   Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/} state, nextState; // Exceptions
 
@@ -171,8 +171,8 @@ always_comb
 
                 6'h2:
                     nextState = Jump;
-                //6'h3:
-                //    nextState = jal;
+                6'h3:
+                    nextState = JumpSavePC;
                 6'h2b, 6'h23:
                     nextState = MemComputation;
                 6'h0f:
@@ -770,6 +770,36 @@ always_comb
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
+        end
+
+        JumpSavePC: begin
+            PCWrite = 1;
+            MemReadWrite = 1'bx;
+            IRWrite = 0;
+            RegWrite = 1; // do it
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'bx;
+            CauseWrite = 0;
+            EPCWrite = 0;
+            TreatSrc = 0;
+
+            IorD = 1'bx;
+            MemtoReg = 4; // PC
+            RegDst = 2; // $31
+            PCSource = 0;
+            IntCause = 0;
+
+            AluSrcA = 1;
+            AluSrcB = 0;
+
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            nextState = Jump;
         end
 
         Beq: begin
