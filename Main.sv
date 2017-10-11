@@ -63,11 +63,11 @@ assign SRout = ShiftedNumber;
 
 Mux32_16 N_Mux (.in0(I15_0[10:6]), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
 ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bin), .Saida(ShiftedNumber));
-//ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(3'b010), .N(5'b00001), .Entrada(32'b10), .Saida(ShiftedNumber));
+
 // PC
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
 Mux8_2 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
-Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .in3({24'b000000000000000000000000, TreatAdd}), .sel(PCSource), .out(PCin));
+Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .in3({24'b000000000000000000000000, TreatAdd}), .in4(EPC), .sel(PCSource), .out(PCin));
 
 sign_extend SignExtend(.in(I15_0), .out(extended_number));
 Shift_left2 SL2(.in(extended_number), .out(shifted_extended_number));
