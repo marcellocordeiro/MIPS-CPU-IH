@@ -60,7 +60,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE lib/PCShift.sv
 set_global_assignment -name SYSTEMVERILOG_FILE lib/sign_extend.sv
 set_global_assignment -name SYSTEMVERILOG_FILE lib/Shift_left2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE lib/Mux32_16.sv
-set_global_assignment -name SYSTEMVERILOG_FILE lib/Mux8_8.sv
+set_global_assignment -name SYSTEMVERILOG_FILE lib/Mux8_2.sv
 set_global_assignment -name SYSTEMVERILOG_FILE lib/Mux5_8.sv
 set_global_assignment -name VHDL_FILE lib/Register32.vhd
 set_global_assignment -name VHDL_FILE lib/RegisterBank.vhd

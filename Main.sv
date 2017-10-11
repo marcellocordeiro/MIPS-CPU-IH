@@ -59,7 +59,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 //ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(I15_0[10:6]), .Entrada(Bout), .Saida(ShiftToMux)) // trocar I15_0 por uma saÃ­da de mux
 
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
-Mux8_8 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
+Mux8_2 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
 Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .in3({24'b000000000000000000000000, TreatAdd}), .sel(PCSource), .out(PCin));
 
 sign_extend SignExtend(.in(I15_0), .out(extended_number));
@@ -67,7 +67,7 @@ Shift_left2 SL2(.in(extended_number), .out(shifted_extended_number));
 
 Register32 EPC_reg (.Clk(clock), .Reset(reset), .Load(EPCWrite), .Entrada(Alu), .Saida(EPC));
 
-Mux32_16 Cause_mux (.in0(0), .in1(1), .sel(IntCause), .out(CauseIn)); // entradas: 0 e 1 ou endereço de tratamento (254 e 255)?
+Mux32_16 Cause_mux (.in0(0), .in1(1), .sel(IntCause), .out(CauseIn)); // entradas: 0 e 1 ou endereï¿½o de tratamento (254 e 255)?
 Register32 Cause_reg (.Clk(clock), .Reset(reset), .Load(CauseWrite), .Entrada(CauseIn), .Saida(Cause));
 
 endmodule: Main
