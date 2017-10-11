@@ -6,7 +6,7 @@ module Main (input logic clock, reset,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0,
              output logic [4:0] shamt);
-
+             
 logic [2:0] ALUOpOut;
 
 logic [31:0] jmp_adr;
@@ -62,7 +62,7 @@ logic [3:0] NShiftSource;
 assign shamt = I15_0[10:6];
 assign SRout = ShiftedNumber;
 
-Mux32_16 N_Mux (.in0({27'b000000000000000000000000000, I15_0[10:6]}), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
+Mux32_16 N_Mux (.in0(I15_0[10:6]), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
 ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bin), .Saida(ShiftedNumber));
 //ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(3'b010), .N(5'b00001), .Entrada(32'b10), .Saida(ShiftedNumber));
 // PC

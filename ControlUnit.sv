@@ -180,7 +180,7 @@ always_comb
                     //IntCause = 0; (já tá)
                     CauseWrite = 1;
                     
-                    nextState = Excp_Read;
+                    nextState = Excp_EPCWrite;
                 end
             endcase
         end
@@ -272,8 +272,7 @@ always_comb
 				IntCause = 1;
 				CauseWrite = 1;
             
-                //nextState = Excp_EPCWrite;
-                nextState = Arit_Store;
+                nextState = Excp_EPCWrite;
             end
 			else begin
                 IntCause = 0;
@@ -805,6 +804,36 @@ always_comb
             nextState = Fetch_PC;
         end
     
+		Excp_EPCWrite: begin
+			PCWrite = 0;
+            MemReadWrite = 0;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+            CauseWrite = 0;
+            EPCWrite = 1;
+            TreatSrc = 0;
+
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
+            PCSource = 0;
+            IntCause = 0;
+            
+            AluSrcA = 0;
+            AluSrcB = 1;
+            
+            ALUOp = SUB; // PC+4 - 4
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            nextState = Excp_Read;
+		end
+    
 		Excp_Read: begin
             PCWrite = 0;
             MemReadWrite = 0; // read
@@ -906,7 +935,6 @@ always_comb
             MDRWrite = 0;
             CauseWrite = 0;
             EPCWrite = 0;
-            //TreatSrc = (Cause)? 1:0; // gambiarra? Ou faz sentido? kkkk
             TreatSrc = Cause[0];
             
             IorD = 0;
@@ -925,66 +953,6 @@ always_comb
 
             nextState = Fetch_PC;
         end
-        
-        /*Excp0: begin
-            PCWrite = 1;
-            MemReadWrite = 0;
-            IRWrite = 0;
-            RegWrite = 0;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 0;
-            CauseWrite = 0;
-            EPCWrite = 0;
-            TreatSrc = 0;
-
-            IorD = 0;
-            MemtoReg = 4'bxxxx;
-            RegDst = 3'bxxx;
-            PCSource = 3;
-            IntCause = 0;
-            
-            AluSrcA = 0;
-            AluSrcB = 0;
-
-            ALUOp = LOAD;
-
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
-            nextState = Fetch_PC;
-        end
-        
-        Excp1: begin
-            PCWrite = 1;
-            MemReadWrite = 0;
-            IRWrite = 0;
-            RegWrite = 0;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 0;
-            CauseWrite = 0;
-            EPCWrite = 0;
-            TreatSrc = 1;
-
-            IorD = 0;
-            MemtoReg = 4'bxxxx;
-            RegDst = 3'bxxx;
-            PCSource = 3;
-            IntCause = 0;
-            
-            AluSrcA = 0;
-            AluSrcB = 0;
-            
-            ALUOp = LOAD;
-
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
-            nextState = Fetch_PC;
-        end*/
     
     endcase
 
