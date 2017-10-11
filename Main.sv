@@ -4,8 +4,7 @@ module Main (input logic clock, reset,
              output logic [31:0] SRout, PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin, EPC,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
-             output logic [15:0] I15_0,
-             output logic [4:0] shamt);
+             output logic [15:0] I15_0);
              
 logic [2:0] ALUOpOut;
 
@@ -23,7 +22,7 @@ logic [2:0] RegDst;
 logic [3:0] IorD, PCSource, MemtoReg, AluSrcA, AluSrcB, IntCause;
 
 ControlUnit ControlUnit (.clock(clock), .reset(reset),
-                         .opcode(I31_26), .funct(I15_0[5:0]),
+                         .opcode(I31_26), .funct(I15_0[5:0]), .shamt(shamt),
                          .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
                          .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
                          .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero), .Overflow(Overflow),
@@ -57,7 +56,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 // Registrador de deslocamento
 logic [31:0] ShiftedNumber;
 logic [2:0] ShiftOpOut;
-logic [4:0] NShift;
+logic [4:0] NShift, shamt;
 logic [3:0] NShiftSource;
 assign shamt = I15_0[10:6];
 assign SRout = ShiftedNumber;

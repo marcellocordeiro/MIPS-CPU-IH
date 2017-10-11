@@ -1,5 +1,6 @@
 module ControlUnit (input logic clock, reset,
                     input logic [5:0] opcode, funct,
+                    input logic [4:0] shamt,
                     input logic Zero, Overflow,
                     input logic [31:0] Cause,
                     output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite, TreatSrc,
@@ -153,11 +154,15 @@ always_comb
             case (opcode)
                 6'h0: begin
                     case (funct)
-                        6'h20, 6'h21, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02:
-                            nextState = Arit_Calc;
-                        6'hd, 6'h0:
+                        6'h20, 6'h21, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: begin
+                            if (funct == 6'h00 && shamt == 6'h00)
+                                nextState = Break;
+                            else
+                                nextState = Arit_Calc;
+                        end
+                        6'h0d/*, 6'h00*/:
                             nextState = Break;
-                        6'h8: // jr
+                        6'h08: // jr
                             nextState = JumpRegister;
                         default:
                             nextState = Fetch_PC;
