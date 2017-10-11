@@ -28,9 +28,9 @@ ControlUnit ControlUnit (.clock(clock), .reset(reset),
                          .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
                          .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
                          .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero), .Overflow(Overflow),
+                         .ShiftOpOut(ShiftOpOut), .NShiftSource(NShiftSource),
                          .EPCWrite(EPCWrite), .IntCause(IntCause), .CauseWrite(CauseWrite), .TreatSrc(TreatSrc), .Cause(Cause));
 
-                         /*.ShiftOp(ShiftOpOut), .NShiftSource(NShiftSource),*/
 Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
 assign WriteDataMem = Bout;
@@ -59,7 +59,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 logic [31:0] ShiftedNumber;
 logic [2:0] ShiftOpOut;
 logic [4:0] NShift;
-logic NShiftSource;
+logic [3:0] NShiftSource;
 
 Mux32_16 N_Mux (.in0({27'b000000000000000000000000000, I15_0[10:6]}), .in1(I25_21), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
 ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bout), .Saida(ShiftedNumber));
