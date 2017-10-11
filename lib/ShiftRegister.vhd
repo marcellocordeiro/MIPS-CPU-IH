@@ -85,7 +85,7 @@ ARCHITECTURE behavioral_arch OF ShiftRegister IS
     begin
 
     -- Clocked process
-    process (Clk, Reset)
+    process (Clk, Reset, temp)
         begin
             if(Reset = '1') then
                 temp <= "00000000000000000000000000000000";

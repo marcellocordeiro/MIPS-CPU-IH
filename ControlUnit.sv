@@ -14,6 +14,7 @@ enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   Beq, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  // Tipo I
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump, // Tipo J
+                  ShiftRead, ShiftWrite, // Shift (depois arrumo isso)
                   Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/} state, nextState; // Exceptions
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
@@ -146,13 +147,13 @@ always_comb
             
             ALUOp = ADD;
 
-            ShiftOp = NOP;
+            ShiftOp = LOADIN;
             NShiftSource = 3'bxxx;
 
             case (opcode)
                 6'h0: begin
                     case (funct)
-                        6'h20, 6'h22, 6'h26, 6'h24:
+                        6'h20, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04:
                             nextState = Arit_Calc;
                         6'hd, 6'h0:
                             nextState = Break;
@@ -207,20 +208,56 @@ always_comb
             AluSrcB = 0;
 
             case (funct)
-                6'h20:
+                6'h20: begin
                     ALUOp = ADD;
-                6'h22:
-                    ALUOp = SUB;
-                6'h24:
-                    ALUOp = AND;
-                6'h26:
-                    ALUOp = XOR;
-                default:
-                    ALUOp = LOAD;
-            endcase
+                    MemtoReg = 0;
 
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h22: begin
+                    ALUOp = SUB;
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h24: begin
+                    ALUOp = AND;
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h26: begin
+                    ALUOp = XOR;
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h00: begin //sll
+                    ShiftOp = LEFT;
+                    NShiftSource = 0;
+                    MemtoReg = 3;
+                    
+                    ALUOp = LOAD;
+                end
+                6'h04: begin //sllv
+                    ShiftOp = LEFT;
+                    NShiftSource = 1;
+                    MemtoReg = 3;
+
+                    ALUOp = LOAD;
+                end
+                default: begin
+                    ALUOp = LOAD;
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+            endcase
             
             nextState = Arit_Store;
         end
@@ -247,20 +284,56 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
             case (funct)
-                6'h20:
+                6'h20: begin
                     ALUOp = ADD;
-                6'h22:
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h22: begin
                     ALUOp = SUB;
-                6'h24:
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h24: begin
                     ALUOp = AND;
-                6'h26:
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h26: begin
                     ALUOp = XOR;
-                default:
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
+                6'h00: begin //sll
+                    ShiftOp = LEFT;
+                    NShiftSource = 0;
+                    MemtoReg = 3;
+                    
                     ALUOp = LOAD;
+                end
+                6'h04: begin //sllv
+                    ShiftOp = LEFT;
+                    NShiftSource = 1;
+                    MemtoReg = 3;
+
+                    ALUOp = LOAD;
+                end
+                default: begin
+                    ALUOp = LOAD;
+                    MemtoReg = 0;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
             endcase
 
             if (Overflow) begin

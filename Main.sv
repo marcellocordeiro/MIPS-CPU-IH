@@ -1,10 +1,11 @@
 module Main (input logic clock, reset,
              output logic RegWrite, wr, IRWrite,
              output logic [5:0] Estado,
-             output logic [31:0] PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin, EPC,
+             output logic [31:0] SRout, PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin, EPC,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
-             output logic [15:0] I15_0);
+             output logic [15:0] I15_0,
+             output logic [4:0] shamt);
 /*
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 assign ALUOpOut = ALUOp;*/
@@ -60,10 +61,12 @@ logic [31:0] ShiftedNumber;
 logic [2:0] ShiftOpOut;
 logic [4:0] NShift;
 logic [3:0] NShiftSource;
+assign shamt = I15_0[10:6];
+assign SRout = ShiftedNumber;
 
-Mux32_16 N_Mux (.in0({27'b000000000000000000000000000, I15_0[10:6]}), .in1(I25_21), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
-ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bout), .Saida(ShiftedNumber));
-
+Mux32_16 N_Mux (.in0(I15_0[10:6]), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
+ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bin), .Saida(ShiftedNumber));
+//ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(3'b010), .N(5'b00001), .Entrada(32'b10), .Saida(ShiftedNumber));
 // PC
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
 Mux8_2 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
