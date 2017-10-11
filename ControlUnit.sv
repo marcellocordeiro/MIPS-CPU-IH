@@ -153,7 +153,7 @@ always_comb
             case (opcode)
                 6'h0: begin
                     case (funct)
-                        6'h20, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02:
+                        6'h20, 6'h21, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02:
                             nextState = Arit_Calc;
                         6'hd, 6'h0:
                             nextState = Break;
@@ -206,7 +206,7 @@ always_comb
             AluSrcB = 0;
 
             case (funct)
-                6'h20: begin
+                6'h20, 6'h21: begin // add e addu
                     ALUOp = ADD;
 
                     ShiftOp = NOP;
@@ -268,7 +268,7 @@ always_comb
                 end
             endcase
 
-            if (Overflow) begin
+            if (Overflow && (funct == 6'h20 || funct == 6'h22)) begin
 				IntCause = 1;
 				CauseWrite = 1;
             
@@ -481,8 +481,20 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            if (Overflow && opcode == 6'h8) begin
+				IntCause = 1;
+				CauseWrite = 1;
+
+                nextState = Excp_EPCWrite;
+            end
+			else begin
+                IntCause = 0;
+                CauseWrite = 0;
+
+			    nextState = AritImmStore;
+            end
 			
-			nextState = AritImmStore;
         end
 
         AritImmStore: begin // fazer overflow
@@ -826,7 +838,7 @@ always_comb
             AluSrcA = 0;
             AluSrcB = 1;
             
-            ALUOp = SUB; // PC+4 - 4
+            ALUOp = SUB; // PC - 4
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;

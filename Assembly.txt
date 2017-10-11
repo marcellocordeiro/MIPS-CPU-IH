@@ -1,4 +1,3 @@
-lui 1 32767
-addi 2 1 65535
-add 2 2 2
+and 29 29 29
+addi 29 29 1
 break
