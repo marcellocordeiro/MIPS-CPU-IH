@@ -59,7 +59,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 //ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(I15_0[10:6]), .Entrada(Bout), .Saida(ShiftToMux)) // trocar I15_0 por uma saída de mux
 
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
-Mux8_2 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
+Mux8_8 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
 Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .in3({24'b000000000000000000000000, TreatAdd}), .sel(PCSource), .out(PCin));
 
 sign_extend SignExtend(.in(I15_0), .out(extended_number));
