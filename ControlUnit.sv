@@ -15,7 +15,7 @@ enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
                   Lui, Jump, // Tipo J
                   ShiftRead, ShiftWrite, // Shift (depois arrumo isso)
-                  Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/} state, nextState; // Exceptions
+                  Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/} state, nextState; // Exceptions
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 assign ALUOpOut = ALUOp;
@@ -74,7 +74,7 @@ always_comb
             AluOutWrite = 0;
             MDRWrite = 1;
             CauseWrite = 0;
-            EPCWrite = 1; // salva PC+4 em EPC (tinha colocado para salvar PC, mas depois do tratamento da exceção, voltaria a executar a partir de EPC e entraria em um loop)
+            EPCWrite = 0;
 			TreatSrc = 0;
 			
             IorD = 0; // PC
@@ -153,7 +153,7 @@ always_comb
             case (opcode)
                 6'h0: begin
                     case (funct)
-                        6'h20, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04:
+                        6'h20, 6'h22, 6'h26, 6'h24, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02:
                             nextState = Arit_Calc;
                         6'hd, 6'h0:
                             nextState = Break;
@@ -194,7 +194,6 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -202,7 +201,6 @@ always_comb
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 0;
-            IntCause = 0;
 
             AluSrcA = 1;
             AluSrcB = 0;
@@ -210,56 +208,79 @@ always_comb
             case (funct)
                 6'h20: begin
                     ALUOp = ADD;
-                    MemtoReg = 0;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h22: begin
                     ALUOp = SUB;
-                    MemtoReg = 0;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h24: begin
                     ALUOp = AND;
-                    MemtoReg = 0;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h26: begin
                     ALUOp = XOR;
-                    MemtoReg = 0;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
-                6'h00: begin //sll
+                6'h00: begin // sll
                     ShiftOp = LEFT;
                     NShiftSource = 0;
-                    MemtoReg = 3;
                     
                     ALUOp = LOAD;
                 end
-                6'h04: begin //sllv
+                6'h04: begin // sllv
                     ShiftOp = LEFT;
                     NShiftSource = 1;
-                    MemtoReg = 3;
 
+                    ALUOp = LOAD;
+                end
+                6'h03: begin // sra
+                    ShiftOp = ARIGHT;
+                    NShiftSource = 0;
+                    
+                    ALUOp = LOAD;
+                end
+                6'h07: begin // srav
+                    ShiftOp = ARIGHT;
+                    NShiftSource = 1;
+
+                    ALUOp = LOAD;
+                end
+                6'h02: begin // srl
+                    ShiftOp = LRIGHT;
+                    NShiftSource = 0;
+                    
                     ALUOp = LOAD;
                 end
                 default: begin
                     ALUOp = LOAD;
-                    MemtoReg = 0;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
             endcase
+
+            if (Overflow) begin
+				IntCause = 1;
+				CauseWrite = 1;
             
-            nextState = Arit_Store;
+                //nextState = Excp_EPCWrite;
+                nextState = Arit_Store;
+            end
+			else begin
+                IntCause = 0;
+                CauseWrite = 0;
+
+				nextState = Arit_Store;
+            end
         end
 
         Arit_Store: begin
@@ -276,7 +297,6 @@ always_comb
             TreatSrc = 0;
 
             IorD = 0;
-            MemtoReg = 0;
             RegDst = 1;
             PCSource = 0;
             IntCause = 0;
@@ -284,67 +304,17 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
             case (funct)
-                6'h20: begin
-                    ALUOp = ADD;
-                    MemtoReg = 0;
-
-                    ShiftOp = NOP;
-                    NShiftSource = 3'bxxx;
-                end
-                6'h22: begin
-                    ALUOp = SUB;
-                    MemtoReg = 0;
-
-                    ShiftOp = NOP;
-                    NShiftSource = 3'bxxx;
-                end
-                6'h24: begin
-                    ALUOp = AND;
-                    MemtoReg = 0;
-
-                    ShiftOp = NOP;
-                    NShiftSource = 3'bxxx;
-                end
-                6'h26: begin
-                    ALUOp = XOR;
-                    MemtoReg = 0;
-
-                    ShiftOp = NOP;
-                    NShiftSource = 3'bxxx;
-                end
-                6'h00: begin //sll
-                    ShiftOp = LEFT;
-                    NShiftSource = 0;
-                    MemtoReg = 3;
-                    
-                    ALUOp = LOAD;
-                end
-                6'h04: begin //sllv
-                    ShiftOp = LEFT;
-                    NShiftSource = 1;
-                    MemtoReg = 3;
-
-                    ALUOp = LOAD;
-                end
-                default: begin
-                    ALUOp = LOAD;
-                    MemtoReg = 0;
-
-                    ShiftOp = NOP;
-                    NShiftSource = 3'bxxx;
-                end
+                6'h00, 6'h04, 6'h03, 6'h07, 6'h02: MemtoReg = 3;
+                default: MemtoReg = 0;
             endcase
 
-            if (Overflow) begin
-				IntCause = 1;
-				CauseWrite = 1;
-            
-                nextState = Excp_Read;
-            end
-			else begin
-				nextState = Fetch_PC;
-            end
+            nextState = Fetch_PC;
         end
 
         Break: begin
