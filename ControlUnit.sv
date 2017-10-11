@@ -65,7 +65,7 @@ always_comb
             AluOutWrite = 0;
             MDRWrite = 1;
             CauseWrite = 0;
-            EPCWrite = 1; // salva PC+4 em EPC (tinha colocado para salvar PC, mas depois do tratamento da exce��o, voltaria a executar a partir de EPC e entraria em um loop)
+            EPCWrite = 1; // salva PC+4 em EPC (tinha colocado para salvar PC, mas depois do tratamento da exceção, voltaria a executar a partir de EPC e entraria em um loop)
 			TreatSrc = 0;
 			
             IorD = 0; // PC
@@ -160,7 +160,7 @@ always_comb
                 6'h8, 6'h9, 6'hc, 6'ha, 6'he: // arit com immediate
                     nextState = AritImmRead;
                 default: begin
-                    //IntCause = 0; (j� t�)
+                    //IntCause = 0; (já tá)
                     CauseWrite = 1;
                     
                     nextState = Excp_Read;

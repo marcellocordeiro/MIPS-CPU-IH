@@ -41,7 +41,7 @@ Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMem),
 InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IRWrite), .Entrada(MemData),.Instr31_26(I31_26), .Instr25_21(I25_21), .Instr20_16(I20_16), .Instr15_0(I15_0));
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftToMux), .sel(MemtoReg), .out(WriteDataReg));
+Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .sel(MemtoReg), .out(WriteDataReg));
 Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
@@ -56,16 +56,15 @@ ALU32 ALU32 (.A(ALU_A), .B(ALU_B), .Seletor(ALUOpOut), .S(Alu), .z(Zero), .Igual
 Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(Alu), .Saida(AluOut));
 
 // Registrador de deslocamento
+logic [31:0] ShiftedNumber;
+logic [2:0] ShiftOpOut;
 logic [4:0] NShift;
 logic NShiftSource;
 
-enum logic [2:0] {NOP, SRLOAD, LEFT, RIGHT, ARITRIGHT, RIGHTROT, LEFTROT} ShiftOp;
-logic [2:0] ShiftOpOut;
-assign ShiftOpOut = ShiftOp;
+Mux32_16 N_Mux (.in0({27'b000000000000000000000000000, I15_0[10:6]}), .in1(I25_21), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
+ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bout), .Saida(ShiftedNumber));
 
-Mux5_8 N_Mux (.in0(I15_0[10:6]), .in1(I25_21), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
-ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOp), .N(NShift), .Entrada(Bout), .Saida(ShiftToMux)); // trocar I15_0 por uma saída de mux
-
+// PC
 PCShift PC_shift (.Instruction({I25_21, I20_16, I15_0}), .PC(PC[31:28]), .out(jmp_adr));
 Mux8_2 Tratamento_mux (.in0(MemData[15:8]), .in1(MemData[7:0]), .sel(TreatSrc), .out(TreatAdd));
 Mux32_16 PC_mux (.in0(Alu), .in1(AluOut), .in2(jmp_adr), .in3({24'b000000000000000000000000, TreatAdd}), .sel(PCSource), .out(PCin));
@@ -75,7 +74,7 @@ Shift_left2 SL2(.in(extended_number), .out(shifted_extended_number));
 
 Register32 EPC_reg (.Clk(clock), .Reset(reset), .Load(EPCWrite), .Entrada(Alu), .Saida(EPC));
 
-Mux32_16 Cause_mux (.in0(0), .in1(1), .sel(IntCause), .out(CauseIn)); // entradas: 0 e 1 ou endere�o de tratamento (254 e 255)?
+Mux32_16 Cause_mux (.in0(0), .in1(1), .sel(IntCause), .out(CauseIn)); // entradas: 0 e 1 ou endereço de tratamento (254 e 255)?
 Register32 Cause_reg (.Clk(clock), .Reset(reset), .Load(CauseWrite), .Entrada(CauseIn), .Saida(Cause));
 
 endmodule: Main
