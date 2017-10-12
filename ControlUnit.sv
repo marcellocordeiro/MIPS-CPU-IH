@@ -18,47 +18,11 @@ enum logic [5:0] {Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
                   ShiftRead, ShiftWrite, // Shift (depois arrumo isso)
                   Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/} state, nextState; // Exceptions
 
-enum logic [2:0] {ALULOAD, ALUADD, ALUSUB, ALUAND, ALUINC, ALUNEG, ALUXOR, ALUCMP} ALUOp;
+enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 assign ALUOpOut = ALUOp;
 
-enum logic [2:0] {SRNOP, LOADIN, LEFT, LRIGHT, ARIGHT, RIGHTROT, LEFTROT} ShiftOp;
+enum logic [2:0] {NOP, LOADIN, LEFT, LRIGHT, ARIGHT, RIGHTROT, LEFTROT} ShiftOp;
 assign ShiftOpOut = ShiftOp;
-
-enum logic [5:0] {
-    RARIT = 6'h00,
-    RTE   = 6'h10,
-    ADDI  = 6'h08,
-    ADDIU = 6'h09,
-    ANDI  = 6'h0c,
-    BEQ   = 6'h04,
-    BNE   = 6'h05,
-    LBU   = 6'h24,
-    LHU   = 6'h25,
-    LUI   = 6'h0f,
-    LW    = 6'h23,
-    SB    = 6'h28,
-    SH    = 6'h29,
-    SLTI  = 6'h0a,
-    SW    = 6'h2b,
-    SXORI = 6'h0e
-} opcodes;
-
-enum logic [5:0] {
-    ADD   = 6'h20,
-    ADDU  = 6'h21,
-    AND   = 6'h24,
-    JR    = 6'h08,
-    SLL   = 6'h00,
-    SLLV  = 6'h04,
-    SLT   = 6'h2a,
-    SRA   = 6'h03,
-    SRAV  = 6'h07,
-    SRL   = 6'h02,
-    SUB   = 6'h22,
-    SUBU  = 6'h23,
-    XOR   = 6'h26,
-    BREAK = 6'h0d
-} functs;
 
 assign State_out = state;
 
@@ -89,13 +53,13 @@ always_comb
             RegDst = 3'bxxx;
             PCSource = 0; // ALU
             IntCause = 0;
-            
+
             AluSrcA = 0; // PC
             AluSrcB = 1; // 4
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_E1;
@@ -112,8 +76,8 @@ always_comb
             MDRWrite = 1;
             CauseWrite = 0;
             EPCWrite = 0;
-			TreatSrc = 0;
-			
+            TreatSrc = 0;
+
             IorD = 0; // PC
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
@@ -122,9 +86,9 @@ always_comb
 
             AluSrcA = 0; // PC
             AluSrcB = 1; // 4
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_E2;
@@ -148,13 +112,13 @@ always_comb
             RegDst = 3'bxxx;
             PCSource = 0; // ALU
             IntCause = 0;
-            
+
             AluSrcA = 0; // PC
             AluSrcB = 1; // 4
-            
-            ALUOp = ALUADD;
 
-            ShiftOp = SRNOP;
+            ALUOp = ADD;
+
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Decode;
@@ -181,8 +145,8 @@ always_comb
 
             AluSrcA = 0; // PC
             AluSrcB = 3; // branch address << 2
-            
-            ALUOp = ALUADD;
+
+            ALUOp = ADD;
 
             ShiftOp = LOADIN;
             NShiftSource = 3'bxxx;
@@ -218,7 +182,7 @@ always_comb
                 default: begin
                     //IntCause = 0; (já tá)
                     CauseWrite = 1;
-                    
+
                     nextState = Excp_EPCWrite;
                 end
             endcase
@@ -246,78 +210,78 @@ always_comb
 
             case (funct)
                 6'h20, 6'h21: begin // add e addu
-                    ALUOp = ALUADD;
+                    ALUOp = ADD;
 
-                    ShiftOp = SRNOP;
+                    ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h22: begin
-                    ALUOp = ALUSUB;
+                    ALUOp = SUB;
 
-                    ShiftOp = SRNOP;
+                    ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h24: begin
-                    ALUOp = ALUAND;
+                    ALUOp = AND;
 
-                    ShiftOp = SRNOP;
+                    ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h26: begin
-                    ALUOp = ALUXOR;
+                    ALUOp = XOR;
 
-                    ShiftOp = SRNOP;
+                    ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
                 6'h00: begin // sll
                     ShiftOp = LEFT;
                     NShiftSource = 0;
-                    
-                    ALUOp = ALULOAD;
+
+                    ALUOp = LOAD;
                 end
                 6'h04: begin // sllv
                     ShiftOp = LEFT;
                     NShiftSource = 1;
 
-                    ALUOp = ALULOAD;
+                    ALUOp = LOAD;
                 end
                 6'h03: begin // sra
                     ShiftOp = ARIGHT;
                     NShiftSource = 0;
-                    
-                    ALUOp = ALULOAD;
+
+                    ALUOp = LOAD;
                 end
                 6'h07: begin // srav
                     ShiftOp = ARIGHT;
                     NShiftSource = 1;
 
-                    ALUOp = ALULOAD;
+                    ALUOp = LOAD;
                 end
                 6'h02: begin // srl
                     ShiftOp = LRIGHT;
                     NShiftSource = 0;
-                    
-                    ALUOp = ALULOAD;
+
+                    ALUOp = LOAD;
                 end
                 default: begin
-                    ALUOp = ALULOAD;
+                    ALUOp = LOAD;
 
-                    ShiftOp = SRNOP;
+                    ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
             endcase
 
             if (Overflow && (funct == 6'h20 || funct == 6'h22)) begin
-				IntCause = 1;
-				CauseWrite = 1;
-            
+                IntCause = 1;
+                CauseWrite = 1;
+
                 nextState = Excp_EPCWrite;
             end
-			else begin
+            else begin
                 IntCause = 0;
                 CauseWrite = 0;
 
-				nextState = Arit_Store;
+                nextState = Arit_Store;
             end
         end
 
@@ -342,9 +306,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             case (funct)
@@ -377,9 +341,9 @@ always_comb
             AluSrcA = 0;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             if (funct == 6'h00) // nop
@@ -410,9 +374,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 2;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = MemComputation_E1;
@@ -440,9 +404,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 2;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = MemComputation_E2;
@@ -470,9 +434,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 2;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             if (opcode == 6'h23)
@@ -500,40 +464,40 @@ always_comb
 
             PCSource = 0;
             IntCause = 0;
-            
+
             AluSrcB = 2;
 
             case (opcode)
                 6'h8: // addi // com check de overflow
-                    ALUOp = ALUADD;
+                    ALUOp = ADD;
                 6'h9: // addiu // sem check de overflow
-                    ALUOp = ALUADD; // fazer
+                    ALUOp = ADD; // fazer
                 6'hc: // andi
-                    ALUOp = ALUAND;
+                    ALUOp = AND;
                 6'ha: // slti
-                    ALUOp = ALULOAD; // fazer (seta rt se rs < imm) // fazer um load e verificar a saída Menor da ALU?
+                    ALUOp = LOAD; // fazer (seta rt se rs < imm) // fazer um load e verificar a saída Menor da ALU?
                 6'he: //sxori
-                    ALUOp = ALUXOR;
+                    ALUOp = XOR;
                 default:
-                    ALUOp = ALULOAD;
+                    ALUOp = LOAD;
             endcase
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             if (Overflow && opcode == 6'h8) begin
-				IntCause = 1;
-				CauseWrite = 1;
+                IntCause = 1;
+                CauseWrite = 1;
 
                 nextState = Excp_EPCWrite;
             end
-			else begin
+            else begin
                 IntCause = 0;
                 CauseWrite = 0;
 
-			    nextState = AritImmStore;
+                nextState = AritImmStore;
             end
-			
+
         end
 
         AritImmStore: begin // fazer overflow
@@ -558,9 +522,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
@@ -588,9 +552,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = MemRead_E1;
@@ -618,9 +582,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = MemRead_E2;
@@ -648,9 +612,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = MemRead_E3;
@@ -678,9 +642,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
@@ -708,9 +672,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALUADD;
+            ALUOp = ADD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
@@ -738,9 +702,9 @@ always_comb
             AluSrcA = 1'bx;
             AluSrcB = 2'bxx;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
@@ -768,9 +732,9 @@ always_comb
             AluSrcA = 1'bx;
             AluSrcB = 2'bxx;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             if (opcode == 6'h3) begin // jal
@@ -809,9 +773,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
@@ -839,9 +803,9 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Jump;
@@ -866,10 +830,10 @@ always_comb
 
             AluSrcA = 1;
             AluSrcB = 0;
-            
-            ALUOp = ALUSUB;
 
-            ShiftOp = SRNOP;
+            ALUOp = SUB;
+
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             if (opcode == 6'h4) begin // beq
@@ -895,9 +859,9 @@ always_comb
 
             nextState = Fetch_PC;
         end
-    
-		Excp_EPCWrite: begin
-			PCWrite = 0;
+
+        Excp_EPCWrite: begin
+            PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
             RegWrite = 0;
@@ -914,19 +878,19 @@ always_comb
             RegDst = 3'bxxx;
             PCSource = 0;
             IntCause = 0;
-            
+
             AluSrcA = 0;
             AluSrcB = 1;
-            
-            ALUOp = ALUSUB; // PC - 4
 
-            ShiftOp = SRNOP;
+            ALUOp = SUB; // PC - 4
+
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Excp_Read;
-		end
-    
-		Excp_Read: begin
+        end
+
+        Excp_Read: begin
             PCWrite = 0;
             MemReadWrite = 0; // read
             IRWrite = 0;
@@ -944,19 +908,19 @@ always_comb
             RegDst = 3'bxxx;
             PCSource = 0;
             IntCause = 0;
-            
+
             AluSrcA = 0;
             AluSrcB = 0;
-            
-            ALUOp = ALULOAD;
 
-            ShiftOp = SRNOP;
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Excp_E1;
         end
 
-		Excp_E1: begin
+        Excp_E1: begin
             PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
@@ -974,19 +938,19 @@ always_comb
             RegDst = 3'bxxx;
             PCSource = 0;
             IntCause = 0;
-            
+
             AluSrcA = 0;
             AluSrcB = 0;
-            
-            ALUOp = ALULOAD;
 
-            ShiftOp = SRNOP;
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Excp_E2;
         end
-		
-		Excp_E2: begin
+
+        Excp_E2: begin
             PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
@@ -1004,18 +968,18 @@ always_comb
             RegDst = 3'bxxx;
             PCSource = 0;
             IntCause = 0;
-            
+
             AluSrcA = 0;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Excp_Treat;
         end
-        
+
         Excp_Treat: begin
             PCWrite = 1;
             MemReadWrite = 0;
@@ -1028,24 +992,24 @@ always_comb
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = Cause[0];
-            
+
             IorD = 0;
             MemtoReg = 4'bxxxx;
             RegDst = 3'bxxx;
             PCSource = 3;
             IntCause = 0;
-            
+
             AluSrcA = 0;
             AluSrcB = 0;
 
-            ALUOp = ALULOAD;
+            ALUOp = LOAD;
 
-            ShiftOp = SRNOP;
+            ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
             nextState = Fetch_PC;
         end
-    
+
     endcase
 
 endmodule: ControlUnit

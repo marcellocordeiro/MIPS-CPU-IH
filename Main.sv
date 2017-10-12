@@ -5,7 +5,7 @@ module Main (input logic clock, reset,
              output logic [5:0] I31_26,
              output logic [4:0] I25_21, I20_16, WriteRegister,
              output logic [15:0] I15_0);
-             
+
 logic [2:0] ALUOpOut;
 
 logic [31:0] jmp_adr;
