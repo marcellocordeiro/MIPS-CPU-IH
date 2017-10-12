@@ -80,7 +80,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -112,7 +112,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -145,7 +145,7 @@ always_comb
             BWrite = 1;
             AluOutWrite = 1; // PC + branch address << 2
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -169,40 +169,39 @@ always_comb
             case (opcode)
                 6'h00: begin // arit
                     case (funct)
-                      //add    addu   sub    subu   and    xor    sll    sllv   sra    srav   srl 
+                    //  add    addu   sub    subu   and    xor    sll    sllv   sra    srav   srl
                         6'h20, 6'h21, 6'h22, 6'h23, 6'h24, 6'h26, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: begin
                             if (funct == 6'h00 && shamt == 6'h00) // nop
                                 nextState = BreakOrNop;
                             else
                                 nextState = Arit_Calc;
                         end
-                      //break    nop
+                    //  break    nop
                         6'h0d/*, 6'h00*/:
                             nextState = BreakOrNop;
-                      //jr
+                    //  jr
                         6'h08:
                             nextState = JumpRegister;
                         default:
                             nextState = Fetch_PC;
                     endcase
                 end
-              //j      jal
+            //  j      jal
                 6'h02, 6'h03:
                     nextState = Jump;
-              //sw     lw
+            //  sw     lw     lbu    lhu    sb     sh
                 6'h2b, 6'h23, 6'h24, 6'h25, 6'h28, 6'h29:
                     nextState = MemComputation;
-              //lui
+            //  lui
                 6'h0f:
                     nextState = LoadImm;
-              //beq    bne
+            //  beq    bne
                 6'h04, 6'h05:
                     nextState = Branch;
-              //addi   addiu  andi   slti   sxori
+            //  addi   addiu  andi   slti   sxori
                 6'h08, 6'h09, 6'h0c, 6'h0a, 6'h0e:
                     nextState = AritImmRead;
-                // opcode inexistente
-                default: begin
+                default: begin // opcode inexistente
                     CauseWrite = 1;
 
                     nextState = Excp_EPCWrite;
@@ -219,7 +218,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            
+
             EPCWrite = 0;
             TreatSrc = 0;
 
@@ -234,63 +233,63 @@ always_comb
             MemWriteSelect = 0;
 
             case (funct)
-              //add    addu
+            //  add    addu
                 6'h20, 6'h21: begin
                     ALUOp = ADD;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
-              //sub    subu
+            //  sub    subu
                 6'h22, 6'h23: begin
                     ALUOp = SUB;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
-              //and
+            //  and
                 6'h24: begin
                     ALUOp = AND;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
-              //xor
+            //  xor
                 6'h26: begin
                     ALUOp = XOR;
 
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
-              //sll
+            //  sll
                 6'h00: begin
                     ShiftOp = LEFT;
                     NShiftSource = 0;
 
                     ALUOp = LOAD;
                 end
-              //sllv
+            //  sllv
                 6'h04: begin
                     ShiftOp = LEFT;
                     NShiftSource = 1;
 
                     ALUOp = LOAD;
                 end
-              //sra
+            //  sra
                 6'h03: begin
                     ShiftOp = ARIGHT;
                     NShiftSource = 0;
 
                     ALUOp = LOAD;
                 end
-              //srav
+            //  srav
                 6'h07: begin
                     ShiftOp = ARIGHT;
                     NShiftSource = 1;
 
                     ALUOp = LOAD;
                 end
-              //srl
+            //  srl
                 6'h02: begin
                     ShiftOp = LRIGHT;
                     NShiftSource = 0;
@@ -305,8 +304,7 @@ always_comb
                 end
             endcase
 
-            //add ou sub
-            if (Overflow && (funct == 6'h20 || funct == 6'h22)) begin
+            if (Overflow && (funct == 6'h20 || funct == 6'h22)) begin // add ou sub
                 IntCause = 1;
                 CauseWrite = 1;
 
@@ -329,7 +327,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -350,7 +348,7 @@ always_comb
             MemWriteSelect = 0;
 
             case (funct)
-              //sll    sllv   sra    srav   srl
+            //  sll    sllv   sra    srav   srl
                 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: MemtoReg = 3;
                 default: MemtoReg = 0;
             endcase
@@ -367,7 +365,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -403,7 +401,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -436,7 +434,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -469,7 +467,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -509,7 +507,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 1;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -520,16 +518,16 @@ always_comb
             AluSrcB = 2;
 
             case (opcode)
-              //addi  addiu
+            //  addi  addiu
                 6'h08, 6'h09:
                     ALUOp = ADD;
-              //andi
+            //  andi
                 6'h0c:
                     ALUOp = AND;
-              //slti FAZER (seta rt se rs < imm) // fazer um load e verificar a saída Menor da ALU?
+            //  slti CORRIGIR (seta rt se rs < imm)
                 6'h0a:
                     ALUOp = COMP;
-              //sxori
+            //  sxori
                 6'h0e:
                     ALUOp = XOR;
                 default:
@@ -540,9 +538,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
-            
-            //addi
-            if (Overflow && opcode == 6'h8) begin
+
+            if (Overflow && opcode == 6'h8) begin // addi
                 IntCause = 1;
                 CauseWrite = 1;
 
@@ -566,7 +563,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -579,8 +576,7 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            //slti
-            if (opcode == 6'h0a) begin
+            if (opcode == 6'h0a) begin // slti
                 if (Less)
                     MemtoReg = 5;
                 else
@@ -589,7 +585,7 @@ always_comb
             else begin
                 MemtoReg = 0;
             end
-            
+
             ALUOp = LOAD;
 
             ShiftOp = NOP;
@@ -609,7 +605,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -642,7 +638,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -675,7 +671,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -703,26 +699,19 @@ always_comb
             PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
-            if(opcode == 6'h28 || opcode == 6'h29 ) // leitura apenas para sb e sh n�o se deve gravar no regbank
-				RegWrite = 0;
-            else
-				RegWrite = 1;
+
+
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
 
             IorD = 1;
-            if(opcode == 6'h23) //lw
-			    MemtoReg = 1;
-			else if(opcode == 6'h24) //lbu
-				MemtoReg = 7;
-			else // opcode == 6'h25 ; //lhu
-				MemtoReg = 8;
+
             RegDst = 0;
             PCSource = 0;
             IntCause = 0;
@@ -737,10 +726,22 @@ always_comb
 
             MemWriteSelect = 0;
 
-            if(opcode == 6'h28 || opcode == 6'h29 ) // caso seja sb ou sh escrever o dado na memoria
-				nextState = MemWrite;
-			else 
-				nextState = Fetch_PC;
+            if (opcode == 6'h23) // lw
+                MemtoReg = 1;
+            else if (opcode == 6'h24) // lbu
+                MemtoReg = 7;
+            else // lhu, opcode == 6'h25
+                MemtoReg = 8;
+
+            //sb ou sh
+            if (opcode == 6'h28 || opcode == 6'h29) begin // caso seja sb ou sh escrever o dado na memoria e leitura apenas para sb e sh não se deve gravar no regbank
+                RegWrite = 0;
+                nextState = MemWrite;
+            end
+            else begin
+                RegWrite = 1;
+                nextState = Fetch_PC;
+            end
         end
 
         MemWrite: begin
@@ -752,7 +753,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -771,13 +772,13 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
-            if(opcode ==  6'h2b)        // sw
-				MemWriteSelect = 0;
-			else if(opcode ==  6'h28)   // sb
-				MemWriteSelect = 1;
-			else 						//sh
-				MemWriteSelect = 2; 
-				
+
+            if (opcode ==  6'h2b) // sw
+                MemWriteSelect = 0;
+            else if(opcode ==  6'h28) // sb
+                MemWriteSelect = 1;
+            else // sh, opcode == 6'h29
+                MemWriteSelect = 2;
 
             nextState = Fetch_PC;
         end
@@ -791,7 +792,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -823,7 +824,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -842,14 +843,12 @@ always_comb
 
             MemWriteSelect = 0;
 
-            //jal
-            if (opcode == 6'h3) begin
+            if (opcode == 6'h3) begin // jal
                 RegWrite = 1; // do it
                 MemtoReg = 4; // PC
                 RegDst = 2; // $31
-            //j
             end
-            else begin
+            else begin // j
                 RegWrite = 0;
                 MemtoReg = 4'bxxxx;
                 RegDst = 3'bxxx;
@@ -867,7 +866,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 1'bx;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -929,7 +928,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -949,8 +948,7 @@ always_comb
 
             MemWriteSelect = 0;
 
-            //beq
-            if (opcode == 6'h04) begin
+            if (opcode == 6'h04) begin // beq
                 if (Zero == 1) begin
                     PCSource = 1;
                     PCWrite = 1;
@@ -960,8 +958,7 @@ always_comb
                     PCWrite = 0;
                 end
             end
-            //opcode == 6'5, bne
-            else begin
+            else begin // bne, opcode == 6'5
                 if (Zero != 1) begin
                     PCSource = 1;
                     PCWrite = 1;
@@ -984,7 +981,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 1;
             TreatSrc = 0;
@@ -1017,7 +1014,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -1050,7 +1047,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -1083,7 +1080,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = 0;
@@ -1116,7 +1113,7 @@ always_comb
             BWrite = 0;
             AluOutWrite = 0;
             MDRWrite = 0;
-            
+
             CauseWrite = 0;
             EPCWrite = 0;
             TreatSrc = Cause[0];

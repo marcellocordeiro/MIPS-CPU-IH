@@ -67,7 +67,7 @@ assign SRout = ShiftedNumber;
 // mux do data write da memoria
 logic [3:0] MemWriteSelect;
 logic [31:0] WriteDataMemMuxOut;
-Mux32_16 WriteDataMemMux(.in0(Bout), .in1( {Bout[7:0],MDR[23:0]}), .in2({Bout[15:0],MDR[15:0]}), .sel(MemWriteSelect), .out(WriteDataMemMuxOut) );
+Mux32_16 WriteDataMemMux(.in0(Bout), .in1({Bout[7:0],MDR[23:0]}), .in2({Bout[15:0], MDR[15:0]}), .sel(MemWriteSelect), .out(WriteDataMemMuxOut));
 
 Mux32_16 N_Mux (.in0(I15_0[10:6]), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, I25_21 == rs
 ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bin), .Saida(ShiftedNumber));
