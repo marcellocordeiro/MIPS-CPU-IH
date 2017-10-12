@@ -5,7 +5,7 @@ module ControlUnit (
     input logic Zero, Overflow, Less, // less: A < B
     input logic [31:0] Cause,
     output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite, TreatSrc,
-    output logic [3:0] IorD, PCSource, AluSrcA, AluSrcB, MemtoReg, IntCause,
+    output logic [3:0] IorD, PCSource, AluSrcA, AluSrcB, MemtoReg, IntCause, MemWriteSelect,
     output logic [5:0] State_out,
     output logic [2:0] RegDst, ALUOpOut,
     output logic [2:0] ShiftOpOut,
@@ -66,6 +66,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Fetch_E1;
         end
 
@@ -95,6 +97,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             nextState = Fetch_E2;
         end
@@ -127,6 +131,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Decode;
         end
 
@@ -158,6 +164,8 @@ always_comb
             ShiftOp = LOADIN;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             case (opcode)
                 6'h00: begin // arit
                     case (funct)
@@ -182,7 +190,7 @@ always_comb
                 6'h02, 6'h03:
                     nextState = Jump;
               //sw     lw
-                6'h2b, 6'h23:
+                6'h2b, 6'h23, 6'h24, 6'h25, 6'h28, 6'h29:
                     nextState = MemComputation;
               //lui
                 6'h0f:
@@ -222,6 +230,8 @@ always_comb
 
             AluSrcA = 1;
             AluSrcB = 0;
+
+            MemWriteSelect = 0;
 
             case (funct)
               //add    addu
@@ -337,6 +347,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             case (funct)
               //sll    sllv   sra    srav   srl
                 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: MemtoReg = 3;
@@ -374,6 +386,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             if (funct == 6'h00) // nop
                 nextState = Fetch_PC;
             else // break
@@ -408,6 +422,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = MemComputation_E1;
         end
 
@@ -439,6 +455,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = MemComputation_E2;
         end
 
@@ -469,6 +487,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             if (opcode == 6'h23)
                 nextState = MemRead;
@@ -518,6 +538,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
             
             //addi
             if (Overflow && opcode == 6'h8) begin
@@ -573,6 +595,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Fetch_PC;
         end
 
@@ -603,6 +627,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             nextState = MemRead_E1;
         end
@@ -635,6 +661,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = MemRead_E2;
         end
 
@@ -666,6 +694,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = MemRead_E3;
         end
 
@@ -673,7 +703,10 @@ always_comb
             PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
-            RegWrite = 1;
+            if(opcode == 6'h28 || opcode == 6'h29 ) // leitura apenas para sb e sh n�o se deve gravar no regbank
+				RegWrite = 0;
+            else
+				RegWrite = 1;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
@@ -684,7 +717,12 @@ always_comb
             TreatSrc = 0;
 
             IorD = 1;
-            MemtoReg = 1;
+            if(opcode == 6'h23) //lw
+			    MemtoReg = 1;
+			else if(opcode == 6'h24) //lbu
+				MemtoReg = 7;
+			else // opcode == 6'h25 ; //lhu
+				MemtoReg = 8;
             RegDst = 0;
             PCSource = 0;
             IntCause = 0;
@@ -697,7 +735,12 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
-            nextState = Fetch_PC;
+            MemWriteSelect = 0;
+
+            if(opcode == 6'h28 || opcode == 6'h29 ) // caso seja sb ou sh escrever o dado na memoria
+				nextState = MemWrite;
+			else 
+				nextState = Fetch_PC;
         end
 
         MemWrite: begin
@@ -727,6 +770,14 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            if(opcode ==  6'h2b)        // sw
+				MemWriteSelect = 0;
+			else if(opcode ==  6'h28)   // sb
+				MemWriteSelect = 1;
+			else 						//sh
+				MemWriteSelect = 2; 
+				
 
             nextState = Fetch_PC;
         end
@@ -759,6 +810,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Fetch_PC;
         end
 
@@ -786,6 +839,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             //jal
             if (opcode == 6'h3) begin
@@ -830,6 +885,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             nextState = Fetch_PC;
         end
@@ -890,6 +947,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             //beq
             if (opcode == 6'h04) begin
                 if (Zero == 1) begin
@@ -944,6 +1003,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Excp_Read;
         end
 
@@ -974,6 +1035,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             nextState = Excp_E1;
         end
@@ -1006,6 +1069,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Excp_E2;
         end
 
@@ -1037,6 +1102,8 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MemWriteSelect = 0;
+
             nextState = Excp_Treat;
         end
 
@@ -1067,6 +1134,8 @@ always_comb
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
 
             nextState = Fetch_PC;
         end
