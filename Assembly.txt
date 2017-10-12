@@ -1,4 +1,2 @@
-nop
-nop
-jal 10
+slti 1 2 0
 break

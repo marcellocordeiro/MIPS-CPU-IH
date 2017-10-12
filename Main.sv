@@ -1,10 +1,12 @@
-module Main (input logic clock, reset,
-             output logic RegWrite, wr, IRWrite,
-             output logic [5:0] Estado,
-             output logic [31:0] SRout, PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin, EPC,
-             output logic [5:0] I31_26,
-             output logic [4:0] I25_21, I20_16, WriteRegister,
-             output logic [15:0] I15_0);
+module Main (
+    input logic clock, reset,
+    output logic RegWrite, wr, IRWrite,
+    output logic [5:0] Estado,
+    output logic [31:0] SRout, PC, PCin, Address, MemData, Aout, Bout, Alu, AluOut, WriteDataReg, MDR, WriteDataMem, Ain, Bin, EPC,
+    output logic [5:0] I31_26,
+    output logic [4:0] I25_21, I20_16, WriteRegister,
+    output logic [15:0] I15_0
+);
 
 logic [2:0] ALUOpOut;
 
@@ -21,25 +23,26 @@ logic PCWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite, Trea
 logic [2:0] RegDst;
 logic [3:0] IorD, PCSource, MemtoReg, AluSrcA, AluSrcB, IntCause;
 
-ControlUnit ControlUnit (.clock(clock), .reset(reset),
-                         .opcode(I31_26), .funct(I15_0[5:0]), .shamt(shamt),
-                         .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
-                         .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
-                         .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero), .Overflow(Overflow),
-                         .ShiftOpOut(ShiftOpOut), .NShiftSource(NShiftSource),
-                         .EPCWrite(EPCWrite), .IntCause(IntCause), .CauseWrite(CauseWrite), .TreatSrc(TreatSrc), .Cause(Cause));
+ControlUnit ControlUnit (
+    .clock(clock), .reset(reset),
+    .opcode(I31_26), .funct(I15_0[5:0]), .shamt(shamt),
+    .PCWrite(PCWrite), .IorD(IorD), .MemReadWrite(wr), .MemtoReg(MemtoReg), .IRWrite(IRWrite),
+    .AluSrcA(AluSrcA), .RegWrite(RegWrite), .RegDst(RegDst), .AWrite(AWrite), .BWrite(BWrite), .AluOutWrite(AluOutWrite),
+    .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero), .Overflow(Overflow), .Less(Less),
+    .ShiftOpOut(ShiftOpOut), .NShiftSource(NShiftSource),
+    .EPCWrite(EPCWrite), .IntCause(IntCause), .CauseWrite(CauseWrite), .TreatSrc(TreatSrc), .Cause(Cause)
+);
 
 Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
 assign WriteDataMem = Bout;
-//Mux32_16 MemMux (.in0(PC), .in1(AluOut), .sel(IorD), .out(Address));
 Mux32_16 MemMux (.in0(PC), .in1(AluOut), .in2(252), .sel(IorD), .out(Address));
 Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMem), .Dataout(MemData));
 
 InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IRWrite), .Entrada(MemData),.Instr31_26(I31_26), .Instr25_21(I25_21), .Instr20_16(I20_16), .Instr15_0(I15_0));
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .in4(PC), .sel(MemtoReg), .out(WriteDataReg));
+Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .in4(PC), .in5(1), .in6(0), .sel(MemtoReg), .out(WriteDataReg));
 Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .in2(5'b11111), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
