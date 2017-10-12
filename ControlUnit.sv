@@ -488,10 +488,10 @@ always_comb
 
             MemWriteSelect = 0;
 
-            if (opcode == 6'h23)
-                nextState = MemRead;
-            else
+            if (opcode == 6'h2b)
                 nextState = MemWrite;
+            else
+                nextState = MemRead;
         end
 
         AritImmRead: begin
