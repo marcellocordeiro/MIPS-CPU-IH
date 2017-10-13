@@ -496,13 +496,9 @@ always_comb
 
         AritImmRead: begin
             PCWrite = 0;
-            IorD = 0;
             MemReadWrite = 1'bx;
-            MemtoReg = 4'bxxxx;
             IRWrite = 0;
-            AluSrcA = 1;
             RegWrite = 0;
-            RegDst = 3'bxxx;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 1;
@@ -512,9 +508,13 @@ always_comb
             EPCWrite = 0;
             TreatSrc = 0;
 
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
             PCSource = 0;
             IntCause = 0;
 
+            AluSrcA = 1;
             AluSrcB = 2;
 
             case (opcode)
@@ -574,7 +574,7 @@ always_comb
             IntCause = 0;
 
             AluSrcA = 1;
-            AluSrcB = 0;
+            AluSrcB = 2;
 
             if (opcode == 6'h0a) begin // slti
                 if (Less)
@@ -586,7 +586,7 @@ always_comb
                 MemtoReg = 0;
             end
 
-            ALUOp = LOAD;
+            ALUOp = COMP; // pra não perder o valor da comparação
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;

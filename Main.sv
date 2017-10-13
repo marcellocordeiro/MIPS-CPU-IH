@@ -8,8 +8,6 @@ module Main (
     output logic [15:0] I15_0
 );
 
-logic [2:0] ALUOpOut;
-
 logic [31:0] jmp_adr;
 
 // Saidas --> Entradas
@@ -43,10 +41,12 @@ InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IR
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
 Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .in4(PC), .in5(1), .in6(0), .in7({24'b000000000000000000000000, MDR[31:24]}), .in8({16'b0000000000000000, MDR[31:16]}),  .sel(MemtoReg), .out(WriteDataReg));
-Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0 [15:11]), .in2(5'b11111), .sel(RegDst), .out(WriteRegister));
+Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0[15:11]), .in2(5'b11111), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
 // ALU
+logic [2:0] ALUOpOut;
+
 Register32 A_reg (.Clk(clock), .Reset(reset), .Load(AWrite), .Entrada(Ain), .Saida(Aout)); // ligado ao regbank
 Register32 B_reg (.Clk(clock), .Reset(reset), .Load(BWrite), .Entrada(Bin), .Saida(Bout)); // ligado ao regbank
 
@@ -67,7 +67,7 @@ assign SRout = ShiftedNumber;
 // Mux do data write da memoria
 logic [3:0] MemWriteSelect;
 logic [31:0] WriteDataMemMuxOut;
-Mux32_16 WriteDataMemMux(.in0(Bout), .in1({Bout[7:0],MDR[23:0]}), .in2({Bout[15:0], MDR[15:0]}), .sel(MemWriteSelect), .out(WriteDataMemMuxOut));
+Mux32_16 WriteDataMemMux(.in0(Bout), .in1({Bout[7:0], MDR[23:0]}), .in2({Bout[15:0], MDR[15:0]}), .sel(MemWriteSelect), .out(WriteDataMemMuxOut));
 
 Mux32_16 N_Mux (.in0(I15_0[10:6]), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, Ain == [rs]
 ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bin), .Saida(ShiftedNumber));
