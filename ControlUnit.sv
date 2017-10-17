@@ -169,8 +169,8 @@ always_comb
             case (opcode)
                 6'h00: begin // arit
                     case (funct)
-                    //  add    addu   sub    subu   and    xor    sll    sllv   sra    srav   srl
-                        6'h20, 6'h21, 6'h22, 6'h23, 6'h24, 6'h26, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: begin
+                    //  add    addu   sub    subu   and    xor    slt    sll    sllv   sra    srav   srl
+                        6'h20, 6'h21, 6'h22, 6'h23, 6'h24, 6'h26, 6'h2a, 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: begin
                             if (funct == 6'h00 && shamt == 6'h00) // nop
                                 nextState = BreakOrNop;
                             else
@@ -261,6 +261,13 @@ always_comb
                     ShiftOp = NOP;
                     NShiftSource = 3'bxxx;
                 end
+            // slt
+                6'h2a: begin
+                    ALUOp = COMP;
+
+                    ShiftOp = NOP;
+                    NShiftSource = 3'bxxx;
+                end
             //  sll
                 6'h00: begin
                     ShiftOp = LEFT;
@@ -340,7 +347,7 @@ always_comb
             AluSrcA = 1;
             AluSrcB = 0;
 
-            ALUOp = LOAD;
+            ALUOp = COMP;
 
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
@@ -348,6 +355,13 @@ always_comb
             MemWriteSelect = 0;
 
             case (funct)
+            //  slt
+                6'h2a: begin
+                    if (Less)
+                        MemtoReg = 5;
+                    else
+                        MemtoReg = 6;
+                end
             //  sll    sllv   sra    srav   srl
                 6'h00, 6'h04, 6'h03, 6'h07, 6'h02: MemtoReg = 3;
                 default: MemtoReg = 0;
