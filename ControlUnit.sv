@@ -4,7 +4,8 @@ module ControlUnit (
     input logic [4:0] shamt,
     input logic Zero, Overflow, Less, // less: A < B
     input logic [31:0] Cause,
-    output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite, TreatSrc,
+    input logic [1:0] MultState,
+    output logic PCWrite, MemReadWrite, IRWrite, RegWrite, AWrite, BWrite, AluOutWrite, MDRWrite, EPCWrite, CauseWrite, TreatSrc, MultEnable,
     output logic [3:0] IorD, PCSource, AluSrcA, AluSrcB, MemtoReg, IntCause, MemWriteSelect,
     output logic [5:0] State_out,
     output logic [2:0] RegDst, ALUOpOut,
@@ -19,7 +20,8 @@ enum logic [5:0] {
     MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
     LoadImm, Jump,/* JumpSavePC,*/ // Tipo J
     ShiftRead, ShiftWrite, // Shift (depois arrumo isso)
-    Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat/*, Excp0, Excp1*/
+    Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat,
+    Multiplication
 } state, nextState; // Exceptions
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
@@ -68,6 +70,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Fetch_E1;
         end
 
@@ -99,6 +103,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             nextState = Fetch_E2;
         end
@@ -133,6 +139,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Decode;
         end
 
@@ -166,6 +174,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             case (opcode)
                 6'h00: begin // arit
                     case (funct)
@@ -176,6 +186,9 @@ always_comb
                             else
                                 nextState = Arit_Calc;
                         end
+                    //  mult
+                        6'h18:
+                            nextState = Multiplication;
                     //  break    nop
                         6'h0d/*, 6'h00*/:
                             nextState = BreakOrNop;
@@ -209,6 +222,44 @@ always_comb
             endcase
         end
 
+        Multiplication: begin
+            PCWrite = 0;
+            MemReadWrite = 0;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+
+            EPCWrite = 0;
+            TreatSrc = 0;
+            IntCause = 1;
+            CauseWrite = 1;
+
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
+            PCSource = 0;
+
+            AluSrcA = 4'bxxxx;
+            AluSrcB = 4'bxxxx;
+
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
+
+            MultEnable = 1;
+
+            if (MultState != 2'b0)
+                nextState = Multiplication;
+            else
+                nextState = Arit_Store;
+        end
+
         Arit_Calc: begin
             PCWrite = 0;
             MemReadWrite = 0;
@@ -231,6 +282,8 @@ always_comb
             AluSrcB = 0;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             case (funct)
             //  add    addu
@@ -354,6 +407,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             case (funct)
             //  slt
                 6'h2a: begin
@@ -400,6 +455,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             if (funct == 6'h00) // nop
                 nextState = Fetch_PC;
             else // break
@@ -436,6 +493,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = MemComputation_E1;
         end
 
@@ -469,6 +528,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = MemComputation_E2;
         end
 
@@ -501,6 +562,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             if (opcode == 6'h2b)
                 nextState = MemWrite;
@@ -552,6 +615,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             if (Overflow && opcode == 6'h8) begin // addi
                 IntCause = 1;
@@ -607,6 +672,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Fetch_PC;
         end
 
@@ -639,6 +706,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             nextState = MemRead_E1;
         end
@@ -673,6 +742,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = MemRead_E2;
         end
 
@@ -705,6 +776,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             nextState = MemRead_E3;
         end
@@ -739,6 +812,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             if (opcode == 6'h23) // lw
                 MemtoReg = 1;
@@ -786,6 +861,7 @@ always_comb
             ShiftOp = NOP;
             NShiftSource = 3'bxxx;
 
+            MultEnable = 0;
 
             if (opcode ==  6'h2b) // sw
                 MemWriteSelect = 0;
@@ -827,6 +903,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Fetch_PC;
         end
 
@@ -856,6 +934,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             if (opcode == 6'h3) begin // jal
                 RegWrite = 1; // do it
@@ -901,38 +981,10 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Fetch_PC;
         end
-
-        /*JumpSavePC: begin
-            PCWrite = 1;
-            MemReadWrite = 1'bx;
-            IRWrite = 0;
-            RegWrite = 1; // do it
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 1'bx;
-            CauseWrite = 0;
-            EPCWrite = 0;
-            TreatSrc = 0;
-
-            IorD = 1'bx;
-            MemtoReg = 4; // PC
-            RegDst = 2; // $31
-            PCSource = 0;
-            IntCause = 0;
-
-            AluSrcA = 1;
-            AluSrcB = 0;
-
-            ALUOp = LOAD;
-
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
-            nextState = Jump;
-        end*/
 
         Branch: begin
             MemReadWrite = 0;
@@ -961,6 +1013,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             if (opcode == 6'h04) begin // beq
                 if (Zero == 1) begin
@@ -1016,6 +1070,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Excp_Read;
         end
 
@@ -1048,6 +1104,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             nextState = Excp_E1;
         end
@@ -1082,6 +1140,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Excp_E2;
         end
 
@@ -1115,6 +1175,8 @@ always_comb
 
             MemWriteSelect = 0;
 
+            MultEnable = 0;
+
             nextState = Excp_Treat;
         end
 
@@ -1147,6 +1209,8 @@ always_comb
             NShiftSource = 3'bxxx;
 
             MemWriteSelect = 0;
+
+            MultEnable = 0;
 
             nextState = Fetch_PC;
         end

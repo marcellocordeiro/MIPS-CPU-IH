@@ -1,6 +1,2 @@
-slti 1 0 0
-addi 8 0 1
-slti 1 8 0
-addi 8 8 10
-slti 1 8 20
+mult 1 2
 break
