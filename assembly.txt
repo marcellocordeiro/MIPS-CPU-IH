@@ -1,2 +1,4 @@
-mult 1 2
+j 2
+rte
+add 2 0 2
 break

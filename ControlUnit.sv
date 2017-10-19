@@ -15,14 +15,14 @@ module ControlUnit (
 
 enum logic [5:0] {
     Fetch_PC, Fetch_E1, Fetch_E2, Decode, // Fetch e Decode
-    Arit_Calc, Arit_Store, BreakOrNop, JumpRegister, // Tipo R
+    Arit_Calc, Arit_Store, BreakOrNop, JumpRegister, Rte, // Tipo R
     Branch, MemComputation, MemComputation_E1, MemComputation_E2, AritImmRead, AritImmStore,  // Tipo I
     MemRead, MemRead_E1, MemRead_E2, MemRead_E3, MemWrite, // Tipo I
-    LoadImm, Jump,/* JumpSavePC,*/ // Tipo J
+    LoadImm, Jump, // Tipo J
     ShiftRead, ShiftWrite, // Shift (depois arrumo isso)
-    Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat,
+    Excp_EPCWrite, Excp_Read, Excp_E1, Excp_E2, Excp_Treat, // Exceptions
     Multiplication
-} state, nextState; // Exceptions
+} state, nextState;
 
 enum logic [2:0] {LOAD, ADD, SUB, AND, INC, NEG, XOR, COMP} ALUOp;
 assign ALUOpOut = ALUOp;
@@ -214,50 +214,15 @@ always_comb
             //  addi   addiu  andi   slti   sxori
                 6'h08, 6'h09, 6'h0c, 6'h0a, 6'h0e:
                     nextState = AritImmRead;
+			//  rte
+				6'h10:
+					nextState = Rte;
                 default: begin // opcode inexistente
                     CauseWrite = 1;
 
                     nextState = Excp_EPCWrite;
                 end
             endcase
-        end
-
-        Multiplication: begin
-            PCWrite = 0;
-            MemReadWrite = 0;
-            IRWrite = 0;
-            RegWrite = 0;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 0;
-
-            EPCWrite = 0;
-            TreatSrc = 0;
-            IntCause = 1;
-            CauseWrite = 1;
-
-            IorD = 0;
-            MemtoReg = 4'bxxxx;
-            RegDst = 3'bxxx;
-            PCSource = 0;
-
-            AluSrcA = 4'bxxxx;
-            AluSrcB = 4'bxxxx;
-
-            ALUOp = LOAD;
-
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
-            MemWriteSelect = 0;
-
-            MultEnable = 1;
-
-            if (MultState != 2'b0)
-                nextState = Multiplication;
-            else
-                nextState = Arit_Store;
         end
 
         Arit_Calc: begin
@@ -461,6 +426,130 @@ always_comb
                 nextState = Fetch_PC;
             else // break
                 nextState = BreakOrNop;
+        end
+
+        JumpRegister: begin
+            PCWrite = 1;
+            MemReadWrite = 1'bx;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 1'bx;
+
+            CauseWrite = 0;
+            EPCWrite = 0;
+            TreatSrc = 0;
+
+            IorD = 1'bx;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
+            PCSource = 0;
+            IntCause = 0;
+
+            AluSrcA = 1;
+            AluSrcB = 0;
+
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
+
+            MultEnable = 0;
+
+            nextState = Fetch_PC;
+        end
+
+		Rte: begin
+            PCWrite = 1;
+            MemReadWrite = 0;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+
+            CauseWrite = 0;
+            EPCWrite = 0;
+            TreatSrc = 0;
+
+            IorD = 1'bx;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
+            PCSource = 4;	// EPC
+            IntCause = 0;
+
+            AluSrcA = 1;
+            AluSrcB = 0;
+
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
+            
+            MultEnable = 0;
+
+            nextState = Fetch_PC;
+        end
+
+        Branch: begin
+            MemReadWrite = 0;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+
+            CauseWrite = 0;
+            EPCWrite = 0;
+            TreatSrc = 0;
+
+            IorD = 0;
+            MemtoReg = 2;
+            RegDst = 0;
+            IntCause = 0;
+
+            AluSrcA = 1;
+            AluSrcB = 0;
+
+            ALUOp = SUB;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
+
+            MultEnable = 0;
+
+            if (opcode == 6'h04) begin // beq
+                if (Zero == 1) begin
+                    PCSource = 1;
+                    PCWrite = 1;
+                end
+                else begin
+                    PCSource = 0;
+                    PCWrite = 0;
+                end
+            end
+            else begin // bne, opcode == 6'5
+                if (Zero != 1) begin
+                    PCSource = 1;
+                    PCWrite = 1;
+                end
+                else begin
+                    PCSource = 0;
+                    PCWrite = 0;
+                end
+            end
+
+            nextState = Fetch_PC;
         end
 
         MemComputation: begin
@@ -951,95 +1040,6 @@ always_comb
             nextState = Fetch_PC;
         end
 
-        JumpRegister: begin
-            PCWrite = 1;
-            MemReadWrite = 1'bx;
-            IRWrite = 0;
-            RegWrite = 0;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 1'bx;
-
-            CauseWrite = 0;
-            EPCWrite = 0;
-            TreatSrc = 0;
-
-            IorD = 1'bx;
-            MemtoReg = 4'bxxxx;
-            RegDst = 3'bxxx;
-            PCSource = 0;
-            IntCause = 0;
-
-            AluSrcA = 1;
-            AluSrcB = 0;
-
-            ALUOp = LOAD;
-
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
-            MemWriteSelect = 0;
-
-            MultEnable = 0;
-
-            nextState = Fetch_PC;
-        end
-
-        Branch: begin
-            MemReadWrite = 0;
-            IRWrite = 0;
-            RegWrite = 0;
-            AWrite = 0;
-            BWrite = 0;
-            AluOutWrite = 0;
-            MDRWrite = 0;
-
-            CauseWrite = 0;
-            EPCWrite = 0;
-            TreatSrc = 0;
-
-            IorD = 0;
-            MemtoReg = 2;
-            RegDst = 0;
-            IntCause = 0;
-
-            AluSrcA = 1;
-            AluSrcB = 0;
-
-            ALUOp = SUB;
-
-            ShiftOp = NOP;
-            NShiftSource = 3'bxxx;
-
-            MemWriteSelect = 0;
-
-            MultEnable = 0;
-
-            if (opcode == 6'h04) begin // beq
-                if (Zero == 1) begin
-                    PCSource = 1;
-                    PCWrite = 1;
-                end
-                else begin
-                    PCSource = 0;
-                    PCWrite = 0;
-                end
-            end
-            else begin // bne, opcode == 6'5
-                if (Zero != 1) begin
-                    PCSource = 1;
-                    PCWrite = 1;
-                end
-                else begin
-                    PCSource = 0;
-                    PCWrite = 0;
-                end
-            end
-
-            nextState = Fetch_PC;
-        end
-
         Excp_EPCWrite: begin
             PCWrite = 0;
             MemReadWrite = 0;
@@ -1051,7 +1051,7 @@ always_comb
             MDRWrite = 0;
 
             CauseWrite = 0;
-            EPCWrite = 1;
+            EPCWrite = 1;	// write
             TreatSrc = 0;
 
             IorD = 0;
@@ -1213,6 +1213,44 @@ always_comb
             MultEnable = 0;
 
             nextState = Fetch_PC;
+        end
+
+        Multiplication: begin
+            PCWrite = 0;
+            MemReadWrite = 0;
+            IRWrite = 0;
+            RegWrite = 0;
+            AWrite = 0;
+            BWrite = 0;
+            AluOutWrite = 0;
+            MDRWrite = 0;
+
+            EPCWrite = 0;
+            TreatSrc = 0;
+            IntCause = 1;
+            CauseWrite = 1;
+
+            IorD = 0;
+            MemtoReg = 4'bxxxx;
+            RegDst = 3'bxxx;
+            PCSource = 0;
+
+            AluSrcA = 4'bxxxx;
+            AluSrcB = 4'bxxxx;
+
+            ALUOp = LOAD;
+
+            ShiftOp = NOP;
+            NShiftSource = 3'bxxx;
+
+            MemWriteSelect = 0;
+
+            MultEnable = 1;
+
+            if (MultState != 2'b0)
+                nextState = Multiplication;
+            else
+                nextState = Arit_Store;
         end
 
     endcase
