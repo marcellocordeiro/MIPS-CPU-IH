@@ -2,13 +2,15 @@ module Multiplication (
     input logic clock, reset, enable,
     input logic [31:0] A, B,
     output reg [31:0] HI, LO,
-    output reg [31:0] Multiplicando, Multiplicador
+    output reg [31:0] Multiplicando, Multiplicador,
+    output reg [63:0] Produto
 );
 
-reg [63:0] Produto;
+//reg [63:0] Produto;
 
 //reg [31:0] Multiplicando, Multiplicador;
 reg [5:0] cont;
+reg neg;
 
 enum logic [1:0] {
     START, TEST, DONE
@@ -26,8 +28,20 @@ always @ (posedge clock, posedge reset) begin
     else begin
         case (state)
             START: begin
-                Multiplicando <= A;
-                Multiplicador <= B;
+                if (A[31] == B[31])
+                    neg <= 0;
+                else
+                    neg <= 1;
+
+                if (A[31] == 1)
+                    Multiplicando <= (~A + 1);
+                else
+                    Multiplicando <= A;
+                
+                if (B[31] == 1)
+                    Multiplicador <= (~B + 1);
+                else
+                    Multiplicador <= B;
 
                 Produto <= 0;
 
@@ -36,18 +50,23 @@ always @ (posedge clock, posedge reset) begin
             end
 
             TEST: begin
-                if (Multiplicador[0])
-                    Produto <= Produto + Multiplicando;
+                if (cont == 6'd32) begin
+                    if (neg == 1)
+                        Produto <= (~Produto + 1);
 
-                Multiplicando <= Multiplicando << 1;
-                Multiplicador <= Multiplicador >> 1;
-
-                cont <= cont + 1;
-
-                if (cont < 6'd32)
-                    state <= TEST;
-                else
                     state <= DONE;
+                end
+                else begin
+                    if (Multiplicador[0])
+                        Produto <= Produto + Multiplicando;
+
+                    Multiplicando <= Multiplicando << 1;
+                    Multiplicador <= Multiplicador >> 1;
+
+                    cont <= cont + 1;
+
+                    state <= TEST;
+                end
             end
 
             DONE: begin
