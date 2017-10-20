@@ -44,7 +44,7 @@ Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMemMu
 InstructionRegister InstructionRegister (.Clk(clock), .Reset(reset), .Load_ir(IRWrite), .Entrada(MemData),.Instr31_26(I31_26), .Instr25_21(I25_21), .Instr20_16(I20_16), .Instr15_0(I15_0));
 Register32 MDR_reg (.Clk(clock), .Reset(reset), .Load(MDRWrite), .Entrada(MemData), .Saida(MDR));
 
-Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .in4(PC), .in5(1), .in6(0), .in7({24'b000000000000000000000000, MDR[31:24]}), .in8({16'b0000000000000000, MDR[31:16]}), .in9(MultHigh), .in10(MultLow), .sel(MemtoReg), .out(WriteDataReg));
+Mux32_16 WriteDataMux (.in0(AluOut), .in1(MDR), .in2({I15_0, 16'b0000000000000000}), .in3(ShiftedNumber), .in4(PC), .in5(1), .in6(0), .in7({24'b000000000000000000000000, MDR[7:0]}), .in8({16'b0000000000000000, MDR[15:0]}), .in9(MultHigh), .in10(MultLow), .sel(MemtoReg), .out(WriteDataReg));
 Mux5_8 WriteRegisterMux (.in0(I20_16), .in1(I15_0[15:11]), .in2(5'b11111), .sel(RegDst), .out(WriteRegister));
 RegisterBank RegisterBank (.Clk(clock), .Reset(reset), .RegWrite(RegWrite), .ReadReg1(I25_21), .ReadReg2(I20_16), .WriteReg(WriteRegister), .WriteData(WriteDataReg), .ReadData1(Ain), .ReadData2(Bin));
 
@@ -76,7 +76,7 @@ assign Reg_Desloc = ShiftedNumber;
 // Mux do data write da memoria
 logic [3:0] MemWriteSelect;
 logic [31:0] WriteDataMemMuxOut;
-Mux32_16 WriteDataMemMux(.in0(Bout), .in1({Bout[7:0], MDR[23:0]}), .in2({Bout[15:0], MDR[15:0]}), .sel(MemWriteSelect), .out(WriteDataMemMuxOut));
+Mux32_16 WriteDataMemMux(.in0(Bout), .in1({MDR[31:8], Bout[7:0]}), .in2({ MDR[31:16], Bout[15:0]}), .sel(MemWriteSelect), .out(WriteDataMemMuxOut));
 
 Mux32_16 N_Mux (.in0(I15_0[10:6]), .in1(Ain), .sel(NShiftSource), .out(NShift)); // I15_0[10:6] == shamt, Ain == [rs]
 ShiftRegister ShiftRegister (.Clk(clock), .Reset(reset), .Shift(ShiftOpOut), .N(NShift), .Entrada(Bin), .Saida(ShiftedNumber));

@@ -68,4 +68,5 @@ set_global_assignment -name VHDL_FILE lib/Memory.vhd
 set_global_assignment -name VHDL_FILE lib/InstructionRegister.vhd
 set_global_assignment -name VHDL_FILE lib/ShiftRegister.vhd
 set_global_assignment -name VHDL_FILE lib/ALU32.vhd
+set_global_assignment -name INCREMENTAL_VECTOR_INPUT_SOURCE Simulation.cvwf
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
