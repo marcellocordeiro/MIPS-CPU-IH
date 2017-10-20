@@ -37,7 +37,7 @@ ControlUnit ControlUnit (
 
 Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
 
-assign WriteDataMem = Bout;
+assign WriteDataMem = WriteDataMemMuxOut;
 Mux32_16 MemMux (.in0(PC), .in1(AluOut), .in2(252), .sel(IorD), .out(Address));
 Memory Memory (.Address(Address), .Clock(clock), .Wr(wr), .Datain(WriteDataMemMuxOut), .Dataout(MemData));
 
