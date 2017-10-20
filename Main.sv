@@ -8,7 +8,7 @@ module Main (
     output logic [15:0] I15_0,
 
     output logic [31:0] MultHigh, MultLow,
-    output logic [1:0] MultState
+    output logic [1:0] mul_Module
 );
 
 logic [31:0] jmp_adr;
@@ -32,7 +32,7 @@ ControlUnit ControlUnit (
     .PCSource(PCSource), .AluSrcB(AluSrcB), .ALUOpOut(ALUOpOut), .State_out(Estado),.MDRWrite(MDRWrite), .Zero(Zero), .Overflow(Overflow), .Less(Less),
     .ShiftOpOut(ShiftOpOut), .NShiftSource(NShiftSource),
     .EPCWrite(EPCWrite), .IntCause(IntCause), .CauseWrite(CauseWrite), .TreatSrc(TreatSrc), .Cause(Cause), .MemWriteSelect(MemWriteSelect),
-    .MultState(MultState), .MultEnable(MultEnable)
+    .MultState(mul_Module), .MultEnable(MultEnable)
 );
 
 Register32 PC_reg (.Clk(clock), .Reset(reset), .Load(PCWrite), .Entrada(PCin), .Saida(PC));
@@ -63,7 +63,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 // Módulo de multiplicação
 //logic [31:0] MultHigh, MultLow;
 logic MultEnable;
-Multiplication Multiplication (.clock(clock), .reset(reset), .enable(MultEnable), .stateOut(MultState), .A(Ain), .B(Bin), .HI(MultHigh), .LO(MultLow));
+Multiplication Multiplication (.clock(clock), .reset(reset), .enable(MultEnable), .stateOut(mul_Module), .A(Ain), .B(Bin), .HI(MultHigh), .LO(MultLow));
 
 // Registrador de deslocamento
 logic [31:0] ShiftedNumber;
