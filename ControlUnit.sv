@@ -1247,10 +1247,10 @@ always_comb
 
             MultEnable = 1;
 
-            if (MultState != 2'b0)
+            if (MultState != 2'b10)
                 nextState = Multiplication;
             else
-                nextState = Arit_Store;
+                nextState = Fetch_PC;
         end
 
     endcase

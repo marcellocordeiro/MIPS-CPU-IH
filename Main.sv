@@ -63,7 +63,7 @@ Register32 AluOut_reg (.Clk(clock), .Reset(reset), .Load(AluOutWrite), .Entrada(
 // Módulo de multiplicação
 //logic [31:0] MultHigh, MultLow;
 logic MultEnable;
-Multiplication Multiplication (.clock(clock), .reset(reset), .enable(MultEnable), .stateOut(MultState), .A(5), .B(10), .HI(MultHigh), .LO(MultLow));
+Multiplication Multiplication (.clock(clock), .reset(reset), .enable(MultEnable), .stateOut(MultState), .A(Ain), .B(Bin), .HI(MultHigh), .LO(MultLow));
 
 // Registrador de deslocamento
 logic [31:0] ShiftedNumber;

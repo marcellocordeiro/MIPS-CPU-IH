@@ -82,7 +82,7 @@ always @ (posedge clock, posedge reset) begin
                 /*if (!enable)
                     state <= START;
                 //else*/
-                    state <= DONE;
+                    state <= START;
             end
         endcase
     end
