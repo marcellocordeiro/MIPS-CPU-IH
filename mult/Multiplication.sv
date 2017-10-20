@@ -11,7 +11,7 @@ reg [5:0] counter;
 reg negative;
 
 enum logic [1:0] {
-    START = 2'b0, TEST, DONE
+    START = 2'b0, TEST, WRITE, DONE
 } state;
 
 assign stateOut = state;
@@ -19,6 +19,8 @@ assign stateOut = state;
 always @ (posedge clock, posedge reset) begin
     if (reset) begin
         state <= START;
+
+        counter <= 5'b0;
         result <= 64'b0;
 
         multiplier <= 32'b0;
@@ -60,7 +62,7 @@ always @ (posedge clock, posedge reset) begin
                     if (negative == 1)
                         result <= (~result + 1);
 
-                    state <= DONE;
+                    state <= WRITE;
                 end
                 else begin
                     if (multiplicand[0])
@@ -75,14 +77,21 @@ always @ (posedge clock, posedge reset) begin
                 end
             end
 
-            DONE: begin
+            WRITE: begin
                 HI <= result[63:32];
                 LO <= result[31:0];
 
-                /*if (!enable)
-                    state <= START;
-                //else*/
-                    state <= START;
+                state <= DONE;
+            end
+
+            DONE: begin
+                counter <= 5'b0;
+                result <= 64'b0;
+
+                multiplier <= 32'b0;
+                multiplicand <= 32'b0;
+
+                state <= START;
             end
         endcase
     end
