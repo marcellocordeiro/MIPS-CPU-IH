@@ -1,7 +1,6 @@
 addi 1 0 5
 addi 2 0 -10
 mult 1 2
-addi 2 2 6
-mult 1 2
-nop
+mfhi 10
+mflo 11
 break

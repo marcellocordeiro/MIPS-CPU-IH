@@ -186,8 +186,8 @@ always_comb
                             else
                                 nextState = Arit_Calc;
                         end
-                    //  mult
-                        6'h18:
+                    //  mult   mfhi   mhlo
+                        6'h18, 6'h10, 6'h12:
                             nextState = Multiplication;
                     //  break    nop
                         6'h0d/*, 6'h00*/:
@@ -1219,7 +1219,6 @@ always_comb
             PCWrite = 0;
             MemReadWrite = 0;
             IRWrite = 0;
-            RegWrite = 0;
             AWrite = 0;
             BWrite = 0;
             AluOutWrite = 0;
@@ -1231,10 +1230,7 @@ always_comb
             CauseWrite = 1;
 
             IorD = 0;
-            MemtoReg = 4'bxxxx;
-            RegDst = 3'bxxx;
             PCSource = 0;
-
             AluSrcA = 4'bxxxx;
             AluSrcB = 4'bxxxx;
 
@@ -1245,14 +1241,39 @@ always_comb
 
             MemWriteSelect = 0;
 
-            MultEnable = 1;
+            case (funct)
+            //  mfhi
+                6'h10: begin
+                    MultEnable = 1;
+                    RegDst = 1;
+                    MemtoReg = 9;
+                    RegWrite = 1;
 
-            if (MultState != 2'b10)
-                nextState = Multiplication;
-            else
-                nextState = Fetch_PC;
+                    nextState = Fetch_PC;
+                end
+            //  mflo
+                6'h12: begin
+                    MultEnable = 1;
+                    RegDst = 1;
+                    MemtoReg = 10;
+                    RegWrite = 1;
+
+                    nextState = Fetch_PC;
+                end
+            //  mult, funct == 6'h18
+                default: begin
+                    MultEnable = 1;
+                    RegDst = 3'bxxx;
+                    MemtoReg = 4'bxxxx;
+                    RegWrite = 0;
+
+                    if (MultState != 2'b10)
+                        nextState = Multiplication;
+                    else
+                        nextState = Fetch_PC;
+                end
+            endcase
         end
-
     endcase
 
 endmodule: ControlUnit
