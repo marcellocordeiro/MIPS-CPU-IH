@@ -1,6 +1,0 @@
-addi 1 0 5
-addi 2 0 -10
-mult 1 2
-mfhi 10
-mflo 11
-break

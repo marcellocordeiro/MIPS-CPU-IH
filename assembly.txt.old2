@@ -1,0 +1,17 @@
+lui 3 101
+srl 3 3 16
+lbu 4 124 0
+sll 5 3 8
+xor 6 5 4
+addi 7 0 1024
+addi 8 0 4864
+jal 10
+nop
+rte
+mult 7 8
+mflo 9
+sw 9 120 0
+sh 6 120 0
+lw 10 120 0
+slt 11 4 3
+jr 31
